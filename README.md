@@ -9,7 +9,7 @@ go build .
 ```
 
 ## Why?
-sometimes you want a quick and dirty solution for evading AVs, and encrypting shellcode doesn't fit in your workflow.
+when ur doing a box and your beacons die when dropping / running from disk 
 
 ## How?
 1. generate your shellcode
