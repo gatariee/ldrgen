@@ -62,6 +62,7 @@ func PrintHelp() {
 Usage: ./ldr [options]
 
 Generates source code for a shellcode loader (Windows x64/x86) from a shellcode binary file (.bin).
+https://github.com/gatariee/ldrgen
 
 Options:
   -bin <path>      Path to the shellcode .bin file. (Required)
