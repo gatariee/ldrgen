@@ -2,6 +2,13 @@ import subprocess
 import argparse
 import os
 
+"""
+If tests don't work for whatever reason, manually test with:
+
+./ldr -bin ../templates/Bin/Calc.bin -out output -ldr CreateRemoteThread --template ../templates 
+
+"""
+
 def run_ldr(ldr_path, template_path):
     bin_arg = os.path.join(template_path, "bin", "Calc.bin")
     out_arg = "out"
