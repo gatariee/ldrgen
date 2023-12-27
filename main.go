@@ -347,8 +347,8 @@ func main() {
 	}
 
 	if *template_path == "" {
-		fmt.Println("[*] Using default template path: ./template")
-		*template_path = "./template"
+		fmt.Println("[*] Using default template path: ./templates")
+		*template_path = "./templates"
 	}
 
 	if !tokenExists(*ldrToken) {
