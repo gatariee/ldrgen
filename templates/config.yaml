@@ -9,25 +9,30 @@ shellcode_template:
   includeOutputName: "Shellcode.h"
 
 loader_template:
-  - token: "inline"
-    key_required: false
-    method: "VirtualAlloc, memcpy, ((void(*)())exec)();"
-    files:
+  - token: "inline" # This is used to identify the loading method (e.g -ldr <token>)
+    key_required: false # This loader does not use encrypted shellcode, so no key is required
+    method: "VirtualAlloc, memcpy, ((void(*)())exec)();" # This can be whatever, just a description of the method
+    files: # These are relative paths to the files that will be included in the loader from the template folder
       - sourcePath: "Source/Inline.c"
         outputPath: "Main.c"
   
   - token: "inline_xor"
-    enc_type: "xor"
-    key_required: true
+    key_required: true # This loader uses encrypted shellcode, so a key is required
+    enc_type: "xor" # Since this loader uses encrypted shellcode, we need to specify the encryption type
     method: "VirtualAlloc, xorShellcode, memcpy, ((void(*)())exec)();"
     files:
       - sourcePath: "Source/Inline_xor.c"
         outputPath: "Main.c"
         substitutions: 
           key: "${KEY}"
+          # xorShellcode(shellcode, shellcode_size, "${KEY}");
+          # Strictly pass in the parameters to replace in the template, this will be provided as a CLI arg (-key <xor_key>)
 
-      - sourcePath: "Source/Xor.c"
+      - sourcePath: "Source/Xor.c" # And, the rest of the source files don't need any substitutions
         outputPath: "Xor.c"
+      
+      - sourcePath: "Include/Xor.h"
+        outputPath: "Xor.h"
 
   - token: "createremotethread"
     key_required: false
@@ -42,3 +47,5 @@ loader_template:
     files:
       - sourcePath: "Source/CreateRemoteThreadRx.c"
         outputPath: "Main.c"
+
+

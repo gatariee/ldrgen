@@ -329,49 +329,6 @@ func ProcessLoaderTemplate(token string, args ...string) error {
 	}
 
 	return nil
-
-	// case "createremotethread":
-
-	// 	/*
-	// 		ldr looks for "notepad.exe" change this to your requirements at: ./{template}/Source/CreateRemoteThread.c
-	// 		allocates RWX memory sections, use this for:
-	// 		- https://unprotect.it/technique/shikata-ga-nai-sgn/#:~:text=Shikata%20Ga%20Nai%20(SGN)%20is,a%20self%2Ddecoding%20obfuscated%20shellcode.
-	// 		- any shellcode that changes itself at runtime (e.g. polymorphic shellcode)
-	// 	*/
-
-	// 	ldr, err := ReadFile(filepath.Join(*template_path, "Source/CreateRemoteThread.c"))
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	err = SaveToFile(*outputPath, "Main.c", ldr)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// case "createremotethreadrx":
-	// 	/*
-	// 		ldr looks for "notepad.exe" change this to your requirements at: ./{template}/Source/CreateRemoteThreadRX.c
-	// 		allocates RWX, writes shellcode to memory, changes memory to RX, creates remote thread
-	// 		VirtualProtectEx
-	// 	*/
-
-	// 	ldr, err := ReadFile(filepath.Join(*template_path, "Source/CreateRemoteThreadRX.c"))
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	err = SaveToFile(*outputPath, "Main.c", ldr)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// default:
-	// 	fmt.Println("Unknown token:", token)
-	// }
-
-	// fmt.Println("[*] Main.c -> OK")
-	// return nil
 }
 
 func readConfig(path string) (*Config, error) {
