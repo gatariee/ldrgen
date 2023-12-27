@@ -1,21 +1,5 @@
 package main
 
-/*
-~ Template Specifications ~
-
-ldr - inline
-	- ./template/Source/Inline.c (template)
-	- ./template/Source/Shellcode.c (generated) via ${SHELLCODE} ${SHELLCODE_SIZE}
-	- ./template/Include/Shellcode.h (template)
-
-ldr - xor_inline
-	- ./template/Source/Inline_Xor.c (generated) via ${KEY}
-	- ./template/Source/Shellcode.c (generated) via ${SHELLCODE} ${SHELLCODE_SIZE}
-	- ./template/Source/Xor.c (template)
-	- ./template/Include/Xor.h (template)
-	- ./template/Include/Shellcode.h (template)
-*/
-
 import (
 	"flag"
 	"fmt"
@@ -48,7 +32,7 @@ var tokens = []token{
 		enc:    false,
 	},
 	{
-		name:   "xor_inline",
+		name:   "inline_xor",
 		method: "VirtualAlloc, xorShellcode, memcpy, ((void(*)())exec)();",
 		enc:    true,
 	},
@@ -79,7 +63,7 @@ Options:
                      Example: -out ./Output
 
   -ldr <token>     Loader token to be used in the generation process. (Required)
-                     Supported tokens: [Inline, Xor_Inline, CreateRemoteThread, CreateRemoteThreadRX]
+                     Supported tokens: [Inline, Inline_Xor, CreateRemoteThread, CreateRemoteThreadRX]
                      Example: -ldr inline
 
   -enc <type>      Encryption type for the shellcode. (Optional)
@@ -100,8 +84,8 @@ Options:
 
 Examples:
   ./ldr -bin ./Template/Bin/Calc.bin -out ./Output -ldr Inline
-  ./ldr -bin ./Template/Bin/Calc.bin -out ./Output -ldr Xor_Inline -enc xor -key mySecretKey1234
-  ./ldr -bin ./Template/Bin/Calc.bin -out ./output -ldr Xor_Inline -enc xor -key uashdikasjhdasdas --cleanup
+  ./ldr -bin ./Template/Bin/Calc.bin -out ./Output -ldr Inline_Xor -enc xor -key mySecretKey1234
+  ./ldr -bin ./Template/Bin/Calc.bin -out ./output -ldr Inline_Xor -enc xor -key uashdikasjhdasdas --cleanup
   ./ldr -bin ./Template/Bin/Calc.bin -out ./output -ldr CreateRemoteThread 
 `
 	fmt.Println(text)
@@ -302,7 +286,7 @@ func ProcessLoaderTemplate(token string, args ...string) error {
 			return err
 		}
 
-	case "xor_inline":
+	case "inline_xor":
 
 		/*
 			need to pass key into ldr template
