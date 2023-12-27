@@ -9,7 +9,7 @@ go build .
 ```
 
 ## Why?
-When you're doing a box and your beacons die when dropping / running from disk, and packers don't do a good enough job.
+When you want to drop your beacon to disk but AV keeps nuking you, and you're too lazy to write a loader
 
 ## Loader Tokens
 Currently available injection tokens:
