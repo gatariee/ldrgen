@@ -1,5 +1,21 @@
 package main
 
+/* 
+~ Template Specifications ~
+
+ldr - inline
+	- ./template/Source/Function.c (template)
+	- ./template/Source/Shellcode.c (generated) via ${SHELLCODE} ${SHELLCODE_SIZE}
+	- ./template/Include/Shellcode.h (template)
+
+ldr - xor_inline
+	- ./template/Source/XorFunction.c (generated) via ${KEY}
+	- ./template/Source/Shellcode.c (generated) via ${SHELLCODE} ${SHELLCODE_SIZE}
+	- ./template/Source/Xor.c (template)
+	- ./template/Include/Xor.h (template)
+	- ./template/Include/Shellcode.h (template)
+*/
+
 import (
 	"flag"
 	"fmt"
@@ -88,15 +104,13 @@ Options:
                      Default: ./template
 
   -cleanup         Cleanup? (delete encrypted shellcode file)
-                     Example: -cleanup true
-                     Default: false
 
   -help            Print this help message.
 
 Examples:
   ./ldr -bin ./Template/Bin/Calc.bin -out ./Output -ldr inline
   ./ldr -bin ./Template/Bin/Calc.bin -out ./Output -ldr xor_inline -enc xor -key mySecretKey1234
-  ./ldr -bin ./Template/Bin/Calc.bin -out ./output -ldr xor_inline -enc xor -key uashdikasjhdasdas --cleanup true
+  ./ldr -bin ./Template/Bin/Calc.bin -out ./output -ldr xor_inline -enc xor -key uashdikasjhdasdas --cleanup 
 `
 	fmt.Println(text)
 }
@@ -362,6 +376,17 @@ func main() {
 		*enc = "xor"
 	}
 
+	if !needsEnc && *enc != "" {
+		fmt.Println("[*] Encryption type specified, but not needed for this loader token:", *ldrToken)
+		return
+	}
+
+	if !needsEnc && *key != "" {
+		fmt.Println("[*] Encryption key specified, but not needed for this loader token:", *ldrToken)
+		return
+	}
+
+
 	if needsEnc && *key == "" {
 		fmt.Println("[*] Encryption key not specified, using default key: aaaabbbbccccdddd")
 		*key = "aaaabbbbccccdddd"
@@ -378,8 +403,6 @@ func main() {
 		fmt.Println("Error processing loader:", err)
 		return
 	}
-
-
 
 	if *enc != "" && *cleanup {
 		fmt.Println("[CLEANUP] Removing encrypted shellcode file:", *shellcodePath+".enc")
