@@ -15,6 +15,9 @@ loader_template:
     files: # These are relative paths to the files that will be included in the loader from the template folder
       - sourcePath: "Source/Inline.c"
         outputPath: "Main.c"
+      
+      - sourcePath: "makefile"
+        outputPath: "makefile"
   
   - token: "inline_xor"
     key_required: true # This loader uses encrypted shellcode, so a key is required
@@ -34,12 +37,18 @@ loader_template:
       - sourcePath: "Include/Xor.h"
         outputPath: "Xor.h"
 
+      - sourcePath: "makefile"
+        outputPath: "makefile"
+
   - token: "createremotethread"
     key_required: false
     method: "OpenProcess, VirtualAllocEx (PAGE_EXECUTE_READWRITE), WriteProcessMemory, CreateRemoteThread, WaitForSingleObject, CloseHandle"
     files:
       - sourcePath: "Source/CreateRemoteThread.c"
         outputPath: "Main.c"
+
+      - sourcePath: "makefile"
+        outputPath: "makefile"
   
   - token: "createremotethreadrx"
     key_required: false
@@ -47,5 +56,19 @@ loader_template:
     files:
       - sourcePath: "Source/CreateRemoteThreadRx.c"
         outputPath: "Main.c"
+
+      - sourcePath: "makefile"
+        outputPath: "makefile"
+  
+
+  - token: "createthread"
+    key_required: false
+    method: "VirtualAlloc, memcpy, CreateThread, WaitForSingleObject"
+    files:
+      - sourcePath: "Source/CreateThread.c"
+        outputPath: "Main.c"
+
+      - sourcePath: "makefile"
+        outputPath: "makefile"
 
 

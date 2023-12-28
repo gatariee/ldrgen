@@ -85,10 +85,11 @@ Options:
   -help            Print this help message.
 
 Examples:
-  ./ldr -bin ./Template/Bin/Calc.bin -out ./Output -ldr Inline
-  ./ldr -bin ./Template/Bin/Calc.bin -out ./Output -ldr Inline_Xor -enc xor -key mySecretKey1234
-  ./ldr -bin ./Template/Bin/Calc.bin -out ./output -ldr Inline_Xor -enc xor -key uashdikasjhdasdas --cleanup
-  ./ldr -bin ./Template/Bin/Calc.bin -out ./output -ldr CreateRemoteThread 
+  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr Inline
+  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr Inline_Xor -enc xor -key mySecretKey1234
+  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr Inline_Xor -enc xor -key uashdikasjhdasdas --cleanup
+  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateRemoteThread 
+  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread
 `
 	fmt.Println(text)
 }
