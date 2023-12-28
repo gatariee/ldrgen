@@ -11,7 +11,7 @@ OUTPUT := implant
 
 .PHONY: all
 all:
-	@echo "Select target: 'make x64' or 'make x86'.
+	@echo "Usage: make [x64 | x86]
 
 .PHONY: x64
 x64: $(OUTPUT)_x64.exe
