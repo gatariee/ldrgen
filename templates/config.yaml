@@ -70,5 +70,24 @@ loader_template:
 
       - sourcePath: "makefile"
         outputPath: "makefile"
+  
+  - token: "createthread_xor"
+    key_required: true
+    enc_type: "xor"
+    method: "VirtualAlloc, xorShellcode, memcpy, CreateThread, WaitForSingleObject"
+    files:
+      - sourcePath: "Source/CreateThread_Xor.c"
+        outputPath: "Main.c"
+        substitutions: 
+          key: "${KEY}"
+
+      - sourcePath: "Source/Xor.c"
+        outputPath: "Xor.c"
+      
+      - sourcePath: "Include/Xor.h"
+        outputPath: "Xor.h"
+
+      - sourcePath: "makefile"
+        outputPath: "makefile"
 
 
