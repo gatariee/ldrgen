@@ -179,6 +179,14 @@ func ToCArray(filePath string) (string, error) {
 }
 
 func ProcessShellcodeTemplate(binPath string, enc string, args map[string]string) error {
+
+	if enc != "" {
+		_, ok := args["key"]
+		if !ok {
+			return fmt.Errorf("key not provided")
+		}
+	}
+
 	switch enc {
 	case "xor":
 		key := args["key"]
@@ -281,24 +289,48 @@ func parseArgs(arg []string) (map[string]string, error) {
 	return result, nil
 }
 
+func countSubs(files []FileConfig) int {
+	num_subs := 0
+	for _, f := range files {
+		num_subs += len(f.Substitutions)
+	}
+	return num_subs
+}
+
+func verifySubstitutions(template_args map[string]string, files []FileConfig) error {
+	for _, f := range files {
+		for k := range f.Substitutions {
+			if _, ok := template_args[k]; !ok {
+				return fmt.Errorf("missing argument: %s", k)
+			}
+		}
+	}
+	return nil
+}
+
 func ProcessLoaderTemplate(token string, enc string, template_args map[string]string) error {
 	method := tokenMethod(token)
 	fmt.Println("[LDR] Using:", method)
 
 	for _, l := range Templates.Loader {
 		if strings.EqualFold(l.Token, token) {
+			fmt.Println("[LDR] Using:", l.Token)
 
-			if l.EncType != nil {
-				if enc != "" {
-					if !strings.EqualFold(*l.EncType, enc) {
-						fmt.Println("[LDR] Warning: Enc type specified does not match the one required by the loader token:", *l.EncType)
-					}
-				} else {
-					fmt.Println("[LDR] Warning: Enc type not specified, using default type:", *l.EncType)
-				}
+			// check that number of substitutions, match the number of arguments
+
+			if len(template_args) != countSubs(l.Files) {
+				return fmt.Errorf("number of arguments does not match number of substitutions: expected %d, got %d", countSubs(l.Files), len(template_args))
 			}
 
-			fmt.Println("[LDR] Using:", l.Token)
+			// check that all substitutions are present in the arguments
+			err := verifySubstitutions(template_args, l.Files)
+			if err != nil {
+				return err
+			}	
+
+
+
+
 			for _, f := range l.Files {
 				content, err := ReadFile(filepath.Join(*template_path, f.SourcePath))
 				if err != nil {
@@ -383,6 +415,34 @@ func init() {
 	}
 }
 
+func cleanShellcode() {
+
+	fmt.Println("deleting -", *outputPath+"/"+Templates.Shellcode.SourceOutputName)
+	err := os.Remove(*outputPath + "/" + Templates.Shellcode.SourceOutputName)
+	if err != nil {
+		return
+	}
+
+	fmt.Println("deleting -", *outputPath+"/"+Templates.Shellcode.IncludeOutputName)
+	err = os.Remove(*outputPath + "/" + Templates.Shellcode.IncludeOutputName)
+	if err != nil {
+		return
+	}
+}
+
+func cleanLoader() {
+
+	for _, l := range Templates.Loader {
+		for _, f := range l.Files {
+			fmt.Println("deleting -", *outputPath+"/"+f.OutputPath)
+			err := os.Remove(*outputPath + "/" + f.OutputPath)
+			if err != nil {
+				return
+			}
+		}
+	}
+}
+
 func main() {
 	template_args := make(map[string]string)
 	if *args != "" {
@@ -390,20 +450,27 @@ func main() {
 		template_args, err = parseArgs(strings.Split(*args, ","))
 		if err != nil {
 			fmt.Println("[!] Error parsing arguments:", err)
-			return
+			os.Exit(1)
 		}
 	}
 
 	err := ProcessShellcodeTemplate(*binPath, *enc, template_args)
 	if err != nil {
 		fmt.Println("Error processing shellcode:", err)
-		return
+
+		cleanShellcode()
+
+		os.Exit(1)
 	}
 
 	err = ProcessLoaderTemplate(strings.ToLower(*ldrToken), *enc, template_args)
 	if err != nil {
 		fmt.Println("Error processing loader:", err)
-		return
+
+		cleanShellcode()
+		cleanLoader()
+
+		os.Exit(1)
 	}
 
 	if *enc != "" && *cleanup {

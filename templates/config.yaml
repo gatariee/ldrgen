@@ -89,10 +89,11 @@ loader_template:
 
       - sourcePath: "makefile"
         outputPath: "makefile"
+
   - token: "createthread_xor_sleep"
     key_required: true
     enc_type: "xor"
-    method: "VirtualAlloc, Sleep, xorShellcode, memcpy, CreateThread, WaitForSingleObject, Sleep"
+    method: "VirtualAlloc, Sleep, xorShellcode, memcpy, CreateThread, WaitForSingleObject"
     files:
       - sourcePath: "Source/CreateThread_Xor_Sleep.c"
         outputPath: "Main.c"
