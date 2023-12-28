@@ -63,6 +63,7 @@ If you're worried about detections, run your implant through AV before deploying
 *https://www.virustotal.com/gui/file/a88b7bee6e5dab73f158093d9f4ec9e556bd6984689efac44bafe3f600020b66?nocache=1*
 
 This should be fine for Windows Defender.
+
 ![windef](./assets/9a6355fc57ae8c9afb8bf9f73bc8e71a.png)
 
 ### Beacon Callback
