@@ -32,6 +32,11 @@ go build -o ldr .
 ./ldr --help
 ```
 
+## Usage with Encrypted Shellcode
+If you intend to use encrypted payload, `ldrgen` can perform XOR encryption of the binfile for you by specifying the `-enc` and `-key` flags when running the tool. This operation creates a temporary file "shellcode.bin.enc" in your current working directory. Specify `--cleanup` to delete this file afterwards.
+
+Make sure to specify a loader token that supports encryption, some are: `inline_xor`, `createthread_xor`
+
 ## Example (calc.exe)
 ```bash
 ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread_Xor -enc xor -key SuperSecureKey1234 --cleanup
