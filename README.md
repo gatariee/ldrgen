@@ -14,11 +14,11 @@ ldrgen is a golang cli tool for rapid generation of shellcode loaders using pre-
     - [Compilation](#compilation)
     - [Beacon](#beacon)
     - [Callback](#callback)
-  - [Note](#note)
   - [Customization](#customization)
     - [Loader Tokens](#loader-tokens)
     - [New Loader Tokens](#new-loader-tokens)
     - [Globals](#globals)
+    - [Loader Configuration Template](#loader-configuration-template)
   
 
 ## Why?
