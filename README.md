@@ -112,7 +112,11 @@ These are defined in [config.yaml](./templates/config.yaml), this is also where 
 
 - [CreateThread_Xor.c](./templates/Source/CreateThread_Xor.c)
     - token identifier: `createthread_xor`
-    - `VirtualAlloc` to allocate RWX memory, `memcpy` shellcode, encrypt shellcode via [Xor.c](./templates/Source/Xor.c), `CreateThread` to execute shellcode, `WaitForSingleObject` to wait for thread to exit.
+    - `VirtualAlloc` to allocate RWX memory, `memcpy` shellcode, decrypt shellcode via [Xor.c](./templates/Source/Xor.c), `CreateThread` to execute shellcode, `WaitForSingleObject` to wait for thread to exit.
+  
+- [CreateThread_Xor_Sleep.c](./templates/Source/CreateThread_Xor_Sleep.c)
+    - token identifier: `createthread_xor_sleep`
+    - `VirtualAlloc` to allocate RWX memory, sleep, `memcpy` shellcode, decrypt shellcode via [Xor.c](./templates/Source/Xor.c), `Sleep(10)`, `CreateThread` to execute shellcode, `WaitForSingleObject` to wait for thread to exit.
 
 In order to edit existing tokens, you can simply modify the source code in the [templates](./templates) directory.
 
