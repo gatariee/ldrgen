@@ -46,12 +46,11 @@ sliver > generate beacon --http <listener_ip> --format shellcode
 - delete tempfiles after compilation: **true**
 
 ### Compilation
+- compile for x64 windows, alternatively compile for x86 with `make x86` (make sure your shellcode arch is the same as the loader arch)
 ```bash
 cd output && make x64
 ```
 ![ldr_gen_2](./assets/da7bf205f86324a0a7275d57760fb7db.png)
-
-- compile for x64 windows, alternatively compile for x86 with `make x86` (make sure your shellcode arch is the same as the loader arch)
 
 ![ldr_gen_3](./assets/6b69c6bb7c677ff7b9ea7f2cd6ea1692.png)
 
