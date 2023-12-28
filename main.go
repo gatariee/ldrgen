@@ -86,10 +86,11 @@ Options:
 
 Examples:
   ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr Inline
-  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr Inline_Xor -enc xor -key mySecretKey1234
-  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr Inline_Xor -enc xor -key uashdikasjhdasdas --cleanup
   ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateRemoteThread 
   ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread
+
+  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr Inline_Xor -enc xor -key mySecretKey1234 --cleanup
+  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread_Xor -enc xor -key mySecretKey1234 --cleanup
 `
 	fmt.Println(text)
 }
@@ -208,6 +209,7 @@ func ProcessShellcodeTemplate(binPath string, args ...string) error {
 			}
 
 			binPath = binPath + ".enc"
+			/* I'm sorry */
 
 			fmt.Printf("[*] Encrypted shellcode saved to: %s\n\n", binPath)
 
