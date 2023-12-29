@@ -179,7 +179,6 @@ func ToCArray(filePath string) (string, error) {
 }
 
 func ProcessShellcodeTemplate(binPath string, enc string, args map[string]string) error {
-
 	if enc != "" {
 		_, ok := args["key"]
 		if !ok {
@@ -314,7 +313,6 @@ func ProcessLoaderTemplate(token string, enc string, template_args map[string]st
 
 	for _, l := range Templates.Loader {
 		if strings.EqualFold(l.Token, token) {
-			fmt.Println("[LDR] Using:", l.Token)
 
 			// check that number of substitutions, match the number of arguments
 
@@ -326,10 +324,7 @@ func ProcessLoaderTemplate(token string, enc string, template_args map[string]st
 			err := verifySubstitutions(template_args, l.Files)
 			if err != nil {
 				return err
-			}	
-
-
-
+			}
 
 			for _, f := range l.Files {
 				content, err := ReadFile(filepath.Join(*template_path, f.SourcePath))
@@ -416,7 +411,6 @@ func init() {
 }
 
 func cleanShellcode() {
-
 	fmt.Println("deleting -", *outputPath+"/"+Templates.Shellcode.SourceOutputName)
 	err := os.Remove(*outputPath + "/" + Templates.Shellcode.SourceOutputName)
 	if err != nil {
@@ -431,7 +425,6 @@ func cleanShellcode() {
 }
 
 func cleanLoader() {
-
 	for _, l := range Templates.Loader {
 		for _, f := range l.Files {
 			fmt.Println("deleting -", *outputPath+"/"+f.OutputPath)

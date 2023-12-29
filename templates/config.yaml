@@ -2,8 +2,8 @@ shellcode_template:
   sourcePath: "Source/Shellcode.c"
   includePath: "Include/Shellcode.h"
   substitutions:
-    shellcode: "${SHELLCODE}" 
-    shellcode_size: "${SHELLCODE_SIZE}"
+    shellcode: "${ SHELLCODE }" 
+    shellcode_size: "${ SHELLCODE_SIZE }"
   includeGuard: "SHELLCODE_H"
   sourceOutputName: "Shellcode.c"
   includeOutputName: "Shellcode.h"
@@ -110,3 +110,24 @@ loader_template:
       - sourcePath: "makefile"
         outputPath: "makefile"
 
+  - token: "createthread_iat"
+    key_required: false
+    method: "Dyanmic WinAPI resolution then VirtualAlloc, memcpy, CreateThread, WaitForSingleObject"
+    files:
+      - sourcePath: "Source/CreateThread_IAT.c"
+        outputPath: "Main.c"
+
+      - sourcePath: "Source/Hash.c"
+        outputPath: "Hash.c"
+
+      - sourcePath: "Source/Iat.c"
+        outputPath: "Iat.c"
+
+      - sourcePath: "Include/Hash.h"
+        outputPath: "Hash.h"
+
+      - sourcePath: "Include/Iat.h"
+        outputPath: "Iat.h"
+
+      - sourcePath: "makefile"
+        outputPath: "makefile"
