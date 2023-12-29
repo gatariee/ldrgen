@@ -121,10 +121,22 @@ These are defined in [config.yaml](./templates/config.yaml), this is also where 
 - [CreateThread_Xor_Sleep.c](./templates/Source/CreateThread_Xor_Sleep.c)
     - token identifier: `createthread_xor_sleep`
     - `VirtualAlloc` to allocate RWX memory, sleep, `memcpy` shellcode, decrypt shellcode via [Xor.c](./templates/Source/Xor.c), `Sleep(10)`, `CreateThread` to execute shellcode, `WaitForSingleObject` to wait for thread to exit.
+- [CreateThread_Iat_Xor](./templates/Source/CreateThread_IAT_Xor.c)
+    - token identifier: `createthread_iat_xor`
+    - `VirtualAlloc` to allocate RWX memory, `memcpy` shellcode, decrypt shellcode via [Xor.c](./templates/Source/Xor.c), `CreateThread` to execute shellcode, `WaitForSingleObject` to wait for thread to exit.
+    - This technique uses the IAT to resolve `LoadLibraryA` and `GetProcAddress` to resolve WinAPI functions.
+    - Refer to [hash.py](./templates/Scripts/hash.py) for the hash function used to resolve the functions.
+
+- [CreateThread_Iat_Xor_Sleep](./templates/Source/CreateThread_IAT_Xor_Sleep.c)
+    - token identifier: `createthread_iat_xor_sleep`
+    - `VirtualAlloc` to allocate RWX memory, sleep,  `Sleep( ${SLEEP} )`, `memcpy` shellcode, decrypt shellcode via [Xor.c](./templates/Source/Xor.c), `CreateThread` to execute shellcode, `WaitForSingleObject` to wait for thread to exit.
+    - This technique uses the IAT to resolve `LoadLibraryA` and `GetProcAddress` to resolve WinAPI functions.
+    - Refer to [hash.py](./templates/Scripts/hash.py) for the hash function used to resolve the functions.
+    - *I use this for most AV boxes, this shld be sufficient for windef
 
 In order to edit existing tokens, you can simply modify the source code in the [templates](./templates) directory.
 
-For example, in order to add a `Sleep(10)` before decrypting & executing the shellcode in the `CreateThread_Xor` technique, you can modify the main function in [CreateThread_Xor.c](./templates/Source/CreateThread_Xor.c) file:
+For example, in order to add a `Sleep( 1000 )` before decrypting & executing the shellcode in the `CreateThread_Xor` technique, you can modify the main function in [CreateThread_Xor.c](./templates/Source/CreateThread_Xor.c) file:
 ```c
 #include <windows.h>
 int main( int argc, char* argv[] ) {
@@ -134,7 +146,7 @@ int main( int argc, char* argv[] ) {
 	}
 
         /* Sleep for 10 seconds */
-        sleep( 10 );
+        Sleep( 1000 );
         /* Resume execution */
 
 	xorShellcode( shellcode, shellcode_size, "${KEY}" );
