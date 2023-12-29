@@ -13,7 +13,6 @@ ldrgen is a golang cli tool for rapid generation of shellcode loaders using pre-
     - [Loader Generation](#loader-generation)
     - [Compilation](#compilation)
     - [Callback](#callback)
-  
   - [Example (Cobalt Strike Beacon)](#example-cobalt-strike-beacon)
     - [Shellcode Generation](#shellcode-generation)
     - [Loader Generation](#loader-generation-1)
@@ -25,7 +24,6 @@ ldrgen is a golang cli tool for rapid generation of shellcode loaders using pre-
     - [Globals](#globals)
     - [Loader Configuration Template](#loader-configuration-template)
   
-
 ## Why?
 When you want to drop your beacon to disk but AV keeps nuking you, and you need some templates to generate your own loaders.
 
