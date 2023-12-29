@@ -99,7 +99,7 @@ loader_template:
         outputPath: "Main.c"
         substitutions: 
           key: "${KEY}"
-          sleep: "${SLEEP}"
+          sleep: "${ SLEEP }"
 
       - sourcePath: "Source/Xor.c"
         outputPath: "Xor.c"
@@ -172,7 +172,7 @@ loader_template:
         outputPath: "Main.c"
         substitutions: 
           key: "${KEY}"
-          sleep: "${SLEEP}"
+          sleep: "${ SLEEP }"
 
       - sourcePath: "Source/Hash.c"
         outputPath: "Hash.c"
