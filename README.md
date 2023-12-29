@@ -41,7 +41,7 @@ Make sure to specify a loader token that supports encryption, some are: `inline_
 
 ## Example (calc.exe)
 ```bash
-./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread_Xor -enc xor -key SuperSecureKey1234 --cleanup
+./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread_Xor -enc xor -args "key=secretKey123" 
 cd output && make x64
 ```
 
