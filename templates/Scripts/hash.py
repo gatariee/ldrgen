@@ -14,6 +14,7 @@ apis = [
     "WaitForSingleObject",
     "CloseHandle",
     "VirtualFree",
+    "Sleep"
 ]
 
 for api in apis:

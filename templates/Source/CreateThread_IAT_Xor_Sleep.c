@@ -29,8 +29,8 @@ Externally defined IAT variables:
 
 */
 
-#include <windows.h>
 #include <stdio.h>
+#include <windows.h>
 int main( int argc, char *argv[] ) {
 
     HMODULE hLib = LoadLibraryA( "kernel32.dll" );
@@ -50,6 +50,8 @@ int main( int argc, char *argv[] ) {
         ( HANDLE );
         BOOL( *VirtualFree )
         ( LPVOID, SIZE_T, DWORD );
+        BOOL( *Sleep )
+        ( DWORD );
     } Overwat;
 
     /* Change seed if you have a different one, default: 5 */
@@ -57,7 +59,7 @@ int main( int argc, char *argv[] ) {
 
     /* Initialize hashed APIs here! */
     uint64_t hashes[] = {
-        0x9dbfee6c, 0x6d448ec76, 0xd8670435, 0x2fba412b3, 0xc5f1b0c3 };
+        0x9dbfee6c, 0x6d448ec76, 0xd8670435, 0x2fba412b3, 0xc5f1b0c3, 0xdef8f1b2 };
 
     Overwat w;
 
@@ -112,6 +114,11 @@ int main( int argc, char *argv[] ) {
         printf( "Failed to resolve VirtualFree\n" );
         return 1;
     }
+
+    w.Sleep = (BOOL( * )( DWORD ))AddrFromHash(
+        hLib,
+        hashes[5],
+        seed );
 
     /* All APIs have been resolved! */
     FreeLibrary( hLib );
