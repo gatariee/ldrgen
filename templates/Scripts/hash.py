@@ -6,7 +6,7 @@ def hash( value, seed=5 ):
         ret = ( ( ret << 2 ) ^ ( ord( char ) << 1 ) ) % lp
         ret = ( ret >> 1 ) ^ ( p * ret )
 
-    return hex( abs( ret ) )
+    return hex ( abs( ret ) )
 
 
 apis = [
