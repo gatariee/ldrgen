@@ -12,8 +12,13 @@ ldrgen is a golang cli tool for rapid generation of shellcode loaders using pre-
     - [Sliver Shellcode Generation](#sliver-shellcode-generation)
     - [Loader Generation](#loader-generation)
     - [Compilation](#compilation)
-    - [Beacon](#beacon)
     - [Callback](#callback)
+  
+  - [Example (Cobalt Strike Beacon)](#example-cobalt-strike-beacon)
+    - [Shellcode Generation](#shellcode-generation)
+    - [Loader Generation](#loader-generation-1)
+    - [Compilation](#compilation-1)
+    - [Callback](#callback-1)
   - [Customization](#customization)
     - [Loader Tokens](#loader-tokens)
     - [New Loader Tokens](#new-loader-tokens)
@@ -76,10 +81,10 @@ cd output && make x64
 
 ![ldr_gen_3](./assets/6b69c6bb7c677ff7b9ea7f2cd6ea1692.png)
 
-### Beacon
-Copy `implant_x64.exe` to your target, see: [here](https://gitbook.seguranca-informatica.pt/cheat-sheet-1/stuff/file-transfer).
 
-If you're worried about detections, run your implant through AV before deploying it to your target. (avoid VT if you care about getting sigged, but I'll use it cos I'm lazy.)
+- Copy `implant_x64.exe` to your target, see: [here](https://gitbook.seguranca-informatica.pt/cheat-sheet-1/stuff/file-transfer).
+
+> If you're worried about detections, run your implant through AV before deploying it to your target. (avoid VT if you care about getting sigged, but I'll use it cos I'm lazy.)
 
 ![vt](./assets/80f44df4910f31c74259ccfbddc7f97d.png)
 *https://www.virustotal.com/gui/file/a88b7bee6e5dab73f158093d9f4ec9e556bd6984689efac44bafe3f600020b66?nocache=1*
@@ -112,7 +117,7 @@ cd output && make x64
 ```
 ![compiled](./assets/22ef4688201192dcbb2bcd8e38727aa9.png)
 
-### Beacon
+### Callback
 ![callback](./assets/2de26d2ef3135b1458d3cb60139b0136.png)
 
 remove the print statements from source if you care, but in cases where you _should_ care, you should probably be handwriting your loaders.
