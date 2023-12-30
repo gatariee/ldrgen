@@ -29,6 +29,46 @@ ldrgen is a golang cli tool for rapid generation of shellcode loaders using pre-
 ## Why?
 When you want to drop your beacon to disk but AV keeps nuking you, and you need some templates to generate your own loaders.
 
+## Loaders
+Here are the injection techniques that can be used with the generator, do note that the focus for this tool is to generate loaders to bypass AV and not to be evasive against EDR solutions.
+
+- [Inline.c](./templates/Source/Inline.c)
+  - `VirtualAlloc` (RWX), `memcpy` shellcode, execute inline with `( (void ( * )())exec )();`
+- [Inline_Xor.c](./templates/Source/Inline_Xor.c)
+  - `VirtualAlloc` (RWX), `memcpy` shellcode, XOR decrypt, execute inline with `( (void ( * )())exec )();`
+- [CreateThread.c](./templates/Source/CreateThread.c)
+  - `VirtualAlloc` (RWX), `memcpy` shellcode, `CreateThread` to execute shellcode, `WaitForSingleObject` to wait for thread to exit.
+
+- [CreateThread_IAT.c](./templates/Source/CreateThread_IAT.c)
+  - `VirtualAlloc` (RWX), `memcpy` shellcode, `CreateThread` to execute shellcode, `WaitForSingleObject` to wait for thread to exit.
+  - This technique uses `LoadLibraryA` and `GetProcAddress` to dynamically resolve WinAPI functions.
+
+- [CreateThread_Xor.c](./templates/Source/CreateThread_Xor.c)
+  - `VirtualAlloc` (RWX), `memcpy` shellcode, XOR decrypt, `CreateThread` to execute shellcode, `WaitForSingleObject` to wait for thread to exit.
+
+- [CreateThread_IAT_Xor.c](./templates/Source/CreateThread_IAT_Xor.c)
+  - `VirtualAlloc` (RWX), `memcpy` shellcode, XOR decrypt, `CreateThread` to execute shellcode, `WaitForSingleObject` to wait for thread to exit.
+  - This technique uses `LoadLibraryA` and `GetProcAddress` to dynamically resolve WinAPI functions.
+
+- [CreateThread_Xor_Sleep.c](./templates/Source/CreateThread_Xor_Sleep.c)
+  - `VirtualAlloc` (RWX), sleep for x seconds, `memcpy` shellcode, XOR decrypt, `CreateThread` to execute shellcode, `WaitForSingleObject` to wait for thread to exit.
+
+- [CreateThread_IAT_Xor_Sleep.c](./templates/Source/CreateThread_IAT_Xor_Sleep.c)
+  - `VirtualAlloc` (RWX), sleep for x seconds, `memcpy` shellcode, XOR decrypt, `CreateThread` to execute shellcode, `WaitForSingleObject` to wait for thread to exit.
+  - This technique uses `LoadLibraryA` and `GetProcAddress` to dynamically resolve WinAPI functions.
+
+- [EarlyBirdAPC.c](./templates/Source/EarlyBirdAPC.c)
+  - `CreateProcessA`, `VirtualAllocEx` (RWX), `WriteProcessMemory`, and `QueueUserAPC` to execute shellcode in operator-controlled spawned process.
+
+- [CreateRemoteThread.c](./templates/Source/CreateRemoteThread.c)
+  - `OpenProcess`, `VirtualAllocEx` (RWX), `WriteProcessMemory` and `CreateRemoteThread` to execute shellcode in remote process.
+
+- [CreateRemoteThreadRX.c](./templates/Source/CreateRemoteThreadRX.c)
+  - `OpenProcess`, `VirtualAllocEx` (RW), `WriteProcessMemory`, `VirtualProtectEx` (RX) and `CreateRemoteThread` to execute shellcode in remote process.
+
+- [QueueUserAPC.c](./templates/source/QueueUserAPC.c)
+  - `OpenProcess`, `VirtualAllocEx` (RWX), `WriteProcessMemory`, `OpenThread` and `QueueUserAPC` to execute shellcode in remote process.
+
 ## Usage 
 ```bash
 git clone https://github.com/gatariee/ldrgen
@@ -162,6 +202,8 @@ These are defined in [config.yaml](./templates/config.yaml), this is also where 
     - This technique uses the IAT to resolve `LoadLibraryA` and `GetProcAddress` to resolve WinAPI functions.
     - Refer to [hash.py](./templates/Scripts/hash.py) for the hash function used to resolve the functions.
     - *I use this for most AV boxes, this shld be sufficient for windef
+
+  (this list is not updated, check [config.yaml](./templates/config.yaml) for the latest list)
 
 In order to edit existing tokens, you can simply modify the source code in the [templates](./templates) directory.
 
