@@ -2,6 +2,8 @@
 
 ldrgen is a golang cli tool for rapid generation of shellcode loaders using pre-defined templates.
 
+> ⚠️ useful for boxes with av, not so much for irl purposes.
+
 ## Table of Contents
 - [ldrgen](#ldrgen)
   - [Table of Contents](#table-of-contents)

@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "*.embeddedhtml": "html",
-        "windows.h": "c",
-        "psapi.h": "c",
-        "stdio.h": "c"
-    }
-}

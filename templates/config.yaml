@@ -194,3 +194,15 @@ loader_template:
 
       - sourcePath: "makefile"
         outputPath: "makefile"
+  
+  - token: "queueuserapc"
+    key_required: false
+    method: "OpenProcess, VirtualAllocEx, WriteProcessMemory, OpenThread, QueueUserAPC"
+    files:
+      - sourcePath: "Source/QueueUserAPC.c"
+        outputPath: "Main.c"
+        substitutions:
+          pname: ${ PNAME }
+
+      - sourcePath: "makefile"
+        outputPath: "makefile"
