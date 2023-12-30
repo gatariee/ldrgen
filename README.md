@@ -66,7 +66,7 @@ Here are the injection techniques that can be used with the generator, do note t
 - [CreateRemoteThreadRX.c](./templates/Source/CreateRemoteThreadRX.c)
   - `OpenProcess`, `VirtualAllocEx` (RW), `WriteProcessMemory`, `VirtualProtectEx` (RX) and `CreateRemoteThread` to execute shellcode in remote process.
 
-- [QueueUserAPC.c](./templates/source/QueueUserAPC.c)
+- [QueueUserAPC.c](./templates/Source/QueueUserAPC.c)
   - `OpenProcess`, `VirtualAllocEx` (RWX), `WriteProcessMemory`, `OpenThread` and `QueueUserAPC` to execute shellcode in remote process.
 
 ## Usage 
