@@ -92,6 +92,7 @@ Examples:
   ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr Inline_Xor -enc xor -args "key=test" -cleanup
   ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread_Xor -enc xor -args "key=test" -cleanup  
   ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr CreateThread_Xor_Sleep -enc xor -args "key=test, sleep=5" -cleanup
+  ./ldr -bin ./dev/calc_shellcode/calc.bin -out ./output -ldr EarlyBirdAPC -args "pname=c:\\\windows\\\system32\\\cmd.exe"
 `
 	fmt.Println(text)
 }
