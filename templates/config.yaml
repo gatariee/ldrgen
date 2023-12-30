@@ -171,7 +171,7 @@ loader_template:
       - sourcePath: "Source/CreateThread_IAT_Xor_Sleep.c"
         outputPath: "Main.c"
         substitutions: 
-          key: "${KEY}"
+          key: "${ KEY }"
           sleep: "${ SLEEP }"
 
       - sourcePath: "Source/Hash.c"
@@ -200,6 +200,18 @@ loader_template:
     method: "OpenProcess, VirtualAllocEx, WriteProcessMemory, OpenThread, QueueUserAPC"
     files:
       - sourcePath: "Source/QueueUserAPC.c"
+        outputPath: "Main.c"
+        substitutions:
+          pname: ${ PNAME }
+
+      - sourcePath: "makefile"
+        outputPath: "makefile"
+  
+  - token: "earlybirdapc"
+    key_required: false
+    method: "CreateProcessA, VirtualAllocEx, WriteProcessMemory, QueueUserAPC, ResumeThread, WaitForSingleObject"
+    files:
+      - sourcePath: "Source/EarlyBirdAPC.c"
         outputPath: "Main.c"
         substitutions:
           pname: ${ PNAME }
