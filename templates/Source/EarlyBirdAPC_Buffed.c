@@ -108,7 +108,7 @@ int main( int argc, char *argv[] ) {
     /* Sandbox Evasion */
     printf( "[*] Beginning bruteforce routine... \n" );
 
-    const uint64_t test = 0x40ba6a2ed;
+    const uint64_t test = 0x6368b82f2;
 
     const uint64_t seed = 5;
     const int timeout = 40;
@@ -137,6 +137,7 @@ int main( int argc, char *argv[] ) {
             char user_input[10];
             printf( "Enter the correct plaintext (up to 10 characters): " );
             scanf_s( "%10s", user_input, (unsigned)_countof( user_input ) );
+            // Default: zzzza -> 0x6368b82f2
 
             if ( Hash( user_input, seed ) == test ) {
                 printf( "OK -> %s\n", user_input );
