@@ -18,7 +18,7 @@ apis = [
     "WaitForSingleObject",
     "CloseHandle",
     "VirtualFreeEx",
-    "zzzza",
+    "1000",
 ]
 
 for api in apis:
