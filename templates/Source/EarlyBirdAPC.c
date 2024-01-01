@@ -10,7 +10,7 @@ Externally defined shellcode variables:
 */
 
 #include <stdio.h>
-#include <windows.h>
+#include <windows.h> 
 
 int main( int argc, char *argv[] ) {
     STARTUPINFO si = { sizeof( si ) };

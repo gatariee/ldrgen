@@ -10,12 +10,15 @@ def hash( value, seed=5 ):
 
 
 apis = [
-    "VirtualAlloc",
-    "CreateThread",
+    "CreateProcessA",
+    "VirtualAllocEx",
+    "WriteProcessMemory",
+    "QueueUserAPC",
+    "ResumeThread",
     "WaitForSingleObject",
     "CloseHandle",
-    "VirtualFree",
-    "Sleep",
+    "VirtualFreeEx",
+    "zzazzl",
 ]
 
 for api in apis:

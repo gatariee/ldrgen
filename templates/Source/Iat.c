@@ -37,7 +37,7 @@ FARPROC AddrFromHash( HMODULE hLib, uint64_t hashval, uint64_t seed ) {
             uint16_t ordinal = ordinalTable[i];
             uint32_t functionRVA = functionTable[ordinal];
             ret = (FARPROC)( (uint64_t)hLib + functionRVA );
-            fprintf( stdout, "[+] Found: %s (0x%llx) at 0x%llx\n\n", name, hashval, ret );
+            fprintf( stdout, "[+] Found: %s (0x%llx) at 0x%llx\n", name, hashval, ret );
             break;
         }
     }
