@@ -1,0 +1,47 @@
+#App {
+    background-color: #1c2833;
+    color: #f8f9fa;
+    padding: 20px;
+    min-height: 100vh; 
+    font-family: 'Arial', sans-serif;
+    text-align: left;
+}
+
+#App h1 {
+    color: #ecf0f1;
+    margin-bottom: 20px;
+}
+
+#App select {
+    background-color: #34495e;
+    color: #f8f9fa; 
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 5px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+#App select option {
+    background-color: #2c3e50;
+    color: #f8f9fa;
+}
+
+#App select option:checked {
+    background-color: #34495e;
+}
+
+#App select:focus {
+    outline: none;
+    border-color: #3498db; 
+}
+
+@media (max-width: 768px) {
+    #App {
+        padding: 10px;
+    }
+
+    #App select {
+        width: 100%;
+    }
+}

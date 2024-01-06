@@ -1,0 +1,121 @@
+.loader-details-card {
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    background-color: #2c3e50;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    color: #f8f9fa;
+    width: 75%;
+    text-align: left;
+}
+
+.loader-title {
+    color: #ecf0f1;
+    margin-bottom: 15px;
+}
+
+.loader-info p {
+    margin: 10px 0;
+    color: #bdc3c7;
+    font-size: 16px;
+}
+
+.loader-files h4 {
+    margin-top: 20px;
+    color: #ecf0f1;
+}
+
+.loader-files ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.loader-files li {
+    margin-bottom: 10px;
+}
+
+.loader-files button {
+    background-color: #3498db; /* Primary button color */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.loader-files button:hover {
+    background-color: #2980b9; /* Darker shade for hover */
+}
+
+.file-content {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #34495e; /* Slightly lighter dark background for contrast */
+    border: 1px solid #444;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 14px;
+    color: #ecf0f1; /* Light text color */
+    overflow-x: auto;
+}
+
+.file-content pre {
+    margin: 0;
+}
+
+.cross {
+    color: #e74c3c; /* Light red for cross */
+}
+
+.tick {
+    color: #2ecc71; /* Light green for tick */
+}
+
+.substitutions {
+    margin-top: 15px;
+}
+
+.substitution-input {
+    margin-bottom: 10px;
+}
+
+.substitution-input label {
+    margin-right: 10px;
+    color: #ecf0f1;
+}
+
+.substitution-input input {
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid white;
+    background-color: #34495e;
+    color: #f8f9fa;
+}
+
+.content-separator {
+    border-top: 1px solid #444; 
+    margin: 10px 0;
+}
+
+.loader-details-card .expand-buttons {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.loader-details-card .expand-buttons button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    margin-right: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.loader-details-card .expand-buttons button:hover {
+    background-color: #2980b9;
+}
