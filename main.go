@@ -1,7 +1,7 @@
 package main
 
-import "ldr/cmd"
+import ldr "ldr/cmd"
 
 func main() {
-	cmd.Execute()
+	ldr.Execute()
 }
