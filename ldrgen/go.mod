@@ -1,4 +1,4 @@
-module ldr
+module ldrgen
 
 go 1.21
 
