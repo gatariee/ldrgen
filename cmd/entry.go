@@ -22,6 +22,11 @@ var (
 )
 
 func parseArgs(arg []string) (map[string]string, error) {
+	/*
+	Handles the parsing of specifically the "args" flag, which is a comma-separated list of key=value pairs.
+	Example: ... -args "key1=value1,key2=value2,key3=value3"
+
+	*/
 	result := make(map[string]string)
 	for _, pair := range arg {
 		parts := strings.SplitN(strings.TrimSpace(pair), "=", 2)
@@ -38,6 +43,11 @@ func parseArgs(arg []string) (map[string]string, error) {
 }
 
 func init() {
+
+	/* 
+	I hate the way this handles incorrect usage, but I'm way too lazy to improve it. So, we're handling invalid cases manually here.
+	*/
+
 	flag.Usage = PrintHelp
 	flag.Parse()
 
