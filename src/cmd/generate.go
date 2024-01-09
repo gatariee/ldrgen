@@ -16,13 +16,6 @@ var generateCmd = &cobra.Command{
 	Short: "Generate a loader",
 	Long:  `Generate a loader based on the specified template & arguments`,
 	Run: func(cmd *cobra.Command, args []string) {
-		templatePath, _ := cmd.Flags().GetString("template")
-		config, err := gen.ReadConfig(filepath.Join(templatePath, "config.yaml"))
-		if err != nil {
-			fmt.Println("[!] there was an error reading your config, this is what we are trying to read: ", filepath.Join(templatePath, "config.yaml"))
-			return
-		}
-
 		binPath, _ := cmd.Flags().GetString("bin")
 		AbsBinPath, err := filepath.Abs(binPath)
 		if err != nil {
@@ -60,6 +53,13 @@ var generateCmd = &cobra.Command{
 		}
 
 		ldrToken, _ := cmd.Flags().GetString("loader")
+
+		templatePath, _ := cmd.Flags().GetString("template")
+		config, err := gen.ReadConfig(filepath.Join(templatePath, "config.yaml"))
+		if err != nil {
+			fmt.Println("[!] there was an error reading your config, this is what we are trying to read: ", filepath.Join(templatePath, "config.yaml"))
+			return
+		}
 
 		switch ldrToken {
 		case "":

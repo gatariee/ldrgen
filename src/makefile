@@ -7,7 +7,7 @@ all:
 	@echo [*] No default target specified, available targets: `x64`, `x86`, `win64`, `win32`.
 	@echo [*] Alternatively, you can run `make windows` or `make linux` to compile for both architectures
 
-ldrgen: windows linux
+build: windows linux
 	@echo [*] Done compiling for all platforms, binary is located at: $(BIN_FOLDER)
 
 windows: win64 win32
