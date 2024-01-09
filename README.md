@@ -51,25 +51,25 @@ The following examples will use the loader token `EarlyBirdAPC_Buffed` which use
 
 > ✅ All WinAPI function calls are dynamically resolved at runtime from a calculated hash unless otherwise stated, see [hash.py](./templates/Scripts/hash.py) for more information on the hashing algorithm.
 
-1. Attempts sandbox evasion by counting to `10000000000`, takes roughly ~30-45 seconds to complete.
-2. Runtime dynamic resolution of WinAPIs from `kernel32.dll` 
-3. Spawns user controlled process in suspended state - denoted by `${ PNAME }`
+* Attempts sandbox evasion by counting to `10000000000`, takes roughly ~30-45 seconds to complete.
+* Runtime dynamic resolution of WinAPIs from `kernel32.dll` 
+* Spawns user controlled process in suspended state - denoted by `${ PNAME }`
     - Uses `CreateProcessW` resolved from `kernel32.dll` 
     - See: [EarlyBirdAPC_Buffed.c - Line 213](./templates/Source/EarlyBirdAPC_Buffed.c#L213)
-4. Allocates memory in the suspended process with the size of the shellcode
+* Allocates memory in the suspended process with the size of the shellcode
     - Uses `VirtualAllocEx` resolved from `kernel32.dll` to allocate PAGE_EXECUTE_READWRITE (RWX) memory of the size of the shellcode - denoted by `${ SHELLCODE_SIZE }`
     - See: [Shellcode.c - Line 3](./templates/Source/Shellcode.c#L3)
-5. Begins a routine to XOR decrypt the shellcode in memory with a user-defined key - denoted by `${ KEY }`
+* Begins a routine to XOR decrypt the shellcode in memory with a user-defined key - denoted by `${ KEY }`
     - See [EarlyBirdAPC_Buffed.c - Line 236](./templates/Source/EarlyBirdAPC_Buffed.c#236)
     - Uses an XOR function from [Xor.c](./templates/Source/Xor.c) to decrypt the shellcode in memory
 
-6. Writes the shellcode buffer to the allocated memory
+* Writes the shellcode buffer to the allocated memory
     - Uses `WriteProcessMemory` resolved from `kernel32.dll` to write the shellcode to the allocated memory - denoted by `${ SHELLCODE }`
     - See: [Shellcode.c - Line 2](./templates/Source/Shellcode.c#L2)
 
-7. Queues an APC to the suspended thread
-8. Resumes the thread
-9. Pauses execution and waits for process to exit via `WaitForSingleObject`
-10. Cleans up the allocated memory, and dies gracefully.
+* Queues an APC to the suspended thread
+* Resumes the thread
+* Pauses execution and waits for process to exit via `WaitForSingleObject`
+* Cleans up the allocated memory, and dies gracefully.
 
 #### Cobalt Strike Beacon
