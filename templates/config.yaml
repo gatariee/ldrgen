@@ -220,6 +220,7 @@ loader_template:
         outputPath: "makefile"
   - token: "earlybirdapc_buffed"
     key_required: true
+    enc_type: "xor"
     method: "Sandbox Evasion -> WinAPI Resolution -> XOR Shellcode -> Early Bird APC Injection -> Resume Thread"
     files:
       - sourcePath: "Source/EarlyBirdAPC_Buffed.c"

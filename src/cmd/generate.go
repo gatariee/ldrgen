@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -101,7 +102,8 @@ var generateCmd = &cobra.Command{
 
 		default:
 			if arg != "" {
-				parsed_args, err = gen.ParseArgs(args)
+				argList := strings.Split(arg, ",")
+				parsed_args, err = gen.ParseArgs(argList)
 				if err != nil {
 					return
 				}
