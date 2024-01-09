@@ -1,4 +1,4 @@
-module ldrgen
+module ldrgen_gui
 
 go 1.21
 
