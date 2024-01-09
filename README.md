@@ -117,3 +117,9 @@ cd implants && make x64
 
 ![cobalt_example_7](./assets/cobalt_example_7.png)
 
+
+### VT
+don't upload your implants to VT if you intend to reuse your implants
+
+![vt_1](./assets/vt_1.png)
+https://www.virustotal.com/gui/file/6ff98356931564a9a49f390a9f1bffe032adc118cdd0ae5347c11d63004e362e
