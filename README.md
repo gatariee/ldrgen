@@ -67,9 +67,7 @@ The following examples will use the loader token `EarlyBirdAPC_Buffed` which use
     - Uses `WriteProcessMemory` resolved from `kernel32.dll` to write the shellcode to the allocated memory - denoted by `${ SHELLCODE }`
     - See: [Shellcode.c - Line 2](./templates/Source/Shellcode.c#L2)
 
-* Queues an APC to the suspended thread
-* Resumes the thread
-* Pauses execution and waits for process to exit via `WaitForSingleObject`
-* Cleans up the allocated memory, and dies gracefully.
+* Queues an APC to the suspended thread, resumes the thread and waits for process to exit via `WaitForSingleObject`
+* Cleans up the allocated memory, and closes handles, before dying gracefully.
 
 #### Cobalt Strike Beacon
