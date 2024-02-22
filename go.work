@@ -1,6 +1,5 @@
 go 1.21.1
 
 use (
-	./dev/ldrgen_gui
 	./src
 )
