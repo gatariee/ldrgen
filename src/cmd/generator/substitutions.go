@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func countSubs(files []FileConfig) int {
+func CountSubs(files []FileConfig) int {
 	num_subs := 0
 	for _, f := range files {
 		num_subs += len(f.Substitutions)
@@ -12,7 +12,7 @@ func countSubs(files []FileConfig) int {
 	return num_subs
 }
 
-func verifySubstitutions(template_args map[string]string, files []FileConfig) error {
+func VerifySubstitutions(template_args map[string]string, files []FileConfig) error {
 	for _, f := range files {
 		for k := range f.Substitutions {
 			if _, ok := template_args[k]; !ok {

@@ -1,20 +1,14 @@
-/*
-Copyright © 2024 gatari @
-*/
-package cmd
+package utils
 
 import (
-	"os"
+	"fmt"
 
-	"github.com/spf13/cobra"
+	"github.com/fatih/color"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "ldrgen",
-	Short: "A Golang CLI tool for quick generation of shellcode loaders",
-	Long: `
-
-⠀⠀⠀⠀⠀⢸⠓⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+func PrintBanner() {
+	fmt.Println(`
+    ⠀⢸⠓⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⢸⠀⠀⠑⢤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⢸⡆⠀⠀⠀⠙⢤⡷⣤⣦⣀⠤⠖⠚⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⣠⡿⠢⢄⡀⠀⡇⠀⠀⠀⠀⠀⠉⠀⠀⠀⠀⠀⠸⠷⣶⠂⠀⠀⠀⣀⣀⠀⠀⠀
@@ -29,30 +23,50 @@ var rootCmd = &cobra.Command{
 ⠀⠀⢧⡀⠀⢠⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⣞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠙⣶⣶⣿⠢⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠉⠀⠀⠀⠙⢿⣳⠞⠳⡄⠀⠀⠀⢀⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠀⠀⠹⣄⣀⡤⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-
-A CLI tool for quick generation of evasive shellcode loaders using easily customizable templates.
-	
-	`,
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠀⠀⠹⣄⣀⡤⠋⠀⠀⠀⠀⠀
+	`)
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
+func PrintError(msg string, clr bool) {
+	if clr {
+		fmt.Print(color.HiRedString("[!] " + msg + "\n"))
+	} else {
+		fmt.Println("[!] " + msg)
 	}
 }
 
-func init() {
-	rootCmd.AddCommand(lintCmd)
-	rootCmd.AddCommand(generateCmd)
+func PrintSuccess(msg string, clr bool) {
+	if clr {
+		fmt.Print(color.HiGreenString("[+] " + msg + "\n"))
+	} else {
+		fmt.Println("[+] " + msg)
+	}
+}
 
-	/* Disable default completion command */
-	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
-	rootCmd.Root().CompletionOptions.DisableDescriptions = true
+func PrintInfo(msg string, clr bool) {
+	if clr {
+		fmt.Print(color.HiWhiteString("[*] " + msg + "\n"))
+	} else {
+		fmt.Println("[*] " + msg)
+	}
+}
 
-	/* Disable help command */
-	rootCmd.SetHelpCommand(&cobra.Command{Use: "no-help", Run: func(cmd *cobra.Command, args []string) { /* Do nothing */ }})
+func Print(msg string, clr bool) {
+	if clr {
+		fmt.Print(color.HiWhiteString(msg) + "\n")
+	} else {
+		fmt.Print(msg)
+	}
+}
+
+func PrintWhite(msg string) {
+	fmt.Println(color.HiWhiteString(msg))
+}
+
+func PrintNewLine() {
+	fmt.Println()
+}
+
+func ClearScreen() {
+	fmt.Print("\033[H\033[2J")
 }

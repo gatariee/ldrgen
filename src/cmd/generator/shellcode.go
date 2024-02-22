@@ -5,6 +5,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/fatih/color"
+	"ldrgen/cmd/utils"
 )
 
 func ProcessShellcodeTemplate(binPath string, enc string, args map[string]string, outputPath string, config *Config, template_path string) error {
@@ -18,7 +21,16 @@ func ProcessShellcodeTemplate(binPath string, enc string, args map[string]string
 	switch enc {
 	case "xor":
 		key := args["key"]
-		fmt.Println("[!!!] XORing shellcode with key:", key)
+
+		message := fmt.Sprintf("[ %s ] ", color.New(color.Bold).Sprintf("Shellcode Encryption"))
+		utils.PrintWhite(message)
+
+		message = fmt.Sprintf("Using: %s", color.New(color.Bold).Sprintf("XOR"))
+		utils.Print(message, true)
+
+		message = fmt.Sprintf("Key: %s", color.New(color.Bold).Sprintf(key))
+		utils.Print(message, true)
+
 		shellcode, err := os.ReadFile(binPath)
 		if err != nil {
 			return err
@@ -31,11 +43,24 @@ func ProcessShellcodeTemplate(binPath string, enc string, args map[string]string
 
 		ba := fmt.Sprintf("{ %s }", strings.Join(byteArray, ", "))
 
-		fmt.Println("[Sanity Check] Starting bytes (before XOR): ", ba[0:24], "... }")
+		message = fmt.Sprintf("Size: %s bytes", color.New(color.Bold).Sprintf("%d", len(shellcode)))
+		utils.Print(message, true)
+
+		message = fmt.Sprintf("Before: %s ... }", color.New(color.Bold).Sprintf(ba[0:24]))
+		utils.Print(message, true)
 
 		for i := 0; i < len(shellcode); i++ {
 			shellcode[i] ^= key[i%len(key)]
 		}
+
+		byteArray = nil
+		for _, b := range shellcode {
+			byteArray = append(byteArray, fmt.Sprintf("0x%02X", b))
+		}
+
+		ba = fmt.Sprintf("{ %s }", strings.Join(byteArray, ", "))
+		message = fmt.Sprintf("After: %s ... }", color.New(color.Bold).Sprintf(ba[0:24]))
+		utils.Print(message, true)
 
 		err = os.WriteFile(binPath+".enc", shellcode, 0o644)
 		if err != nil {
@@ -44,8 +69,7 @@ func ProcessShellcodeTemplate(binPath string, enc string, args map[string]string
 
 		binPath = binPath + ".enc"
 
-		fmt.Printf("[*] Encrypted shellcode saved to: %s\n\n", binPath)
-
+		utils.PrintNewLine()
 	default:
 	}
 
@@ -72,28 +96,41 @@ func ProcessShellcodeTemplate(binPath string, enc string, args map[string]string
 		return err
 	}
 
-	fmt.Println("[*] Saving generated files to:", abs)
+	message := fmt.Sprintf("[ %s ] ", color.New(color.Bold).Sprintf("%s", config.Shellcode.SourceOutputName))
+	utils.PrintWhite(message)
 
-	fmt.Println("[SHELLCODE] Shellcode size:", fileInfo.Size(), "bytes")
-	fmt.Println("[SHELLCODE] Starting bytes: ", shellcodeArray[0:24], "... }")
+	message = fmt.Sprintf("Size: %s bytes", color.New(color.Bold).Sprintf("%d", fileInfo.Size()))
+	utils.Print(message, true)
+
+	message = fmt.Sprintf("Starting bytes: %s ... }", color.New(color.Bold).Sprintf("%s", shellcodeArray[0:24]))
+	utils.Print(message, true)
 
 	err = SaveToFile(outputPath, config.Shellcode.SourceOutputName, shellcodeTemplate)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("[*] Shellcode.c -> OK")
+	message = fmt.Sprintf("%s -> %s", config.Shellcode.SourceOutputName, abs+"/"+config.Shellcode.SourceOutputName)
+	utils.Print(message, true)
 
 	header_template, err := ReadFile(filepath.Join(template_path, config.Shellcode.IncludePath))
 	if err != nil {
 		return err
 	}
-	fmt.Println("[*] Shellcode.h -> OK")
+
+	message = fmt.Sprintf("[ %s ] ", color.New(color.Bold).Sprintf("%s", config.Shellcode.IncludeOutputName))
+	utils.PrintNewLine()
+	utils.PrintWhite(message)
 
 	err = SaveToFile(outputPath, config.Shellcode.IncludeOutputName, header_template)
 	if err != nil {
 		return err
 	}
+
+	message = fmt.Sprintf("%s -> %s", config.Shellcode.IncludeOutputName, abs+"/"+config.Shellcode.IncludeOutputName)
+	utils.Print(message, true)
+
+	utils.PrintNewLine()
 
 	return nil
 }

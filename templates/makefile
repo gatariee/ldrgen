@@ -19,6 +19,9 @@ OUTPUT := implant
 all:
 	@echo "Usage: make [x64 | x86]"
 
+.PHONY: both
+both: x64 x86
+
 .PHONY: x64
 x64: $(BIN_DIR)/$(OUTPUT)_x64.exe
 

@@ -6,9 +6,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/chzyer/readline"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
 	gen "ldrgen/cmd/generator"
+	utils "ldrgen/cmd/utils"
 )
 
 var generateCmd = &cobra.Command{
@@ -60,22 +63,14 @@ var generateCmd = &cobra.Command{
 			fmt.Println("[!] there was an error reading your config, this is what we are trying to read: ", filepath.Join(templatePath, "config.yaml"))
 			return
 		}
-
-		switch ldrToken {
-		case "":
-			cmd.Help()
-			fmt.Println("\n--loader -> you must specify a loader token")
+		ldrFound := gen.TokenExists(ldrToken, config)
+		if err != nil {
+			fmt.Println(err)
 			return
-		default:
-			ldrFound := gen.TokenExists(ldrToken, config)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			if !ldrFound {
-				fmt.Println("\n--loader -> loader token not found, please check your spelling and try again")
-				return
-			}
+		}
+		if !ldrFound {
+			fmt.Println("\n--loader -> loader token not found, please check your spelling and try again")
+			return
 		}
 
 		enc, _ := cmd.Flags().GetString("enc")
@@ -112,22 +107,6 @@ var generateCmd = &cobra.Command{
 
 		cleanup, _ := cmd.Flags().GetBool("cleanup")
 
-		if binPath == "" {
-			cmd.Help()
-			fmt.Println("\n--bin -> you must specify a .bin file to load")
-			return
-		}
-
-		if outputPath == "" {
-			cmd.Help()
-			return
-		}
-
-		if ldrToken == "" {
-			cmd.Help()
-			return
-		}
-
 		needsEnc := gen.TokenEnc(ldrToken, config)
 		if needsEnc && enc == "" {
 			enc = "xor"
@@ -157,17 +136,62 @@ var generateCmd = &cobra.Command{
 				return
 			}
 		}
+
+		absOutputPath, err := filepath.Abs(outputPath)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		utils.PrintSuccess("Looks like everything worked!", true)
+		message := fmt.Sprintf("Your loader is located at: %s", color.New(color.Bold).Sprintf(absOutputPath))
+		utils.PrintInfo(message, true)
+
+		utils.PrintNewLine()
+		utils.PrintInfo("Compile loader? (y/n)", true)
+
+		rl, err := readline.New("> ")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		compile, err := rl.Readline()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		switch compile {
+		case "y":
+			utils.PrintNewLine()
+			utils.PrintInfo("Compiling loader...", true)
+			err = gen.CompileLoader(absOutputPath)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			utils.PrintSuccess("Loader compiled successfully!", true)
+		default:
+			utils.PrintNewLine()
+			message := fmt.Sprintf("Okay, compile with: `cd %s && make`", absOutputPath)
+			utils.PrintInfo(message, true)
+		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(generateCmd)
+	generateCmd.Flags().StringP("bin", "b", "", "* Path to binary file to load")
+	generateCmd.MarkFlagRequired("bin")
+	generateCmd.Flags().StringP("output", "o", "", "* Path to output directory")
+	generateCmd.MarkFlagRequired("output")
+	generateCmd.Flags().StringP("loader", "l", "", "* Loader token to use")
+	generateCmd.MarkFlagRequired("loader")
+	generateCmd.Flags().StringP("template", "t", "", "Path to template directory")
+	generateCmd.MarkFlagRequired("template")
 
-	generateCmd.Flags().StringP("bin", "b", "", "* Path to binary file to load (required)")
-	generateCmd.Flags().StringP("output", "o", "", "* Path to output directory (required)")
-	generateCmd.Flags().StringP("loader", "l", "", "* Loader token to use (required)")
-	generateCmd.Flags().StringP("enc", "e", "", "Encryption type to use (optional, depending on ldr)")
-	generateCmd.Flags().StringP("args", "a", "", "Arguments to pass to template (optional, depending on ldr)")
-	generateCmd.Flags().StringP("template", "t", "../templates", "Path to template folder (optional, default: ../templates)")
-	generateCmd.Flags().BoolP("cleanup", "c", false, "Cleanup temporary files (optional, default: false)")
+	generateCmd.Flags().StringP("enc", "e", "", "Encryption type to use")
+	generateCmd.Flags().StringP("args", "a", "", "Arguments to pass to template")
+
+	generateCmd.Flags().BoolP("cleanup", "c", false, "Cleanup temporary files")
 }
