@@ -89,20 +89,17 @@ func Compile32(loaderPath string, make string) error {
 	return cmd.Run()
 }
 
-func CompileLoader(ldrPath string) error {
+func CompileLoader(ldrPath string, arch string) error {
 	makes := []string{"make", "mingw32-make.exe"}
 	for _, make := range makes {
 		path_to_make, err := CheckPath(make)
 		if err == nil {
-			err = Compile64(ldrPath, path_to_make)
-			if err != nil {
-				return err
+			switch arch {
+			case "x64":
+				return Compile64(ldrPath, path_to_make)
+			case "x86":
+				return Compile32(ldrPath, path_to_make)
 			}
-			err = Compile32(ldrPath, path_to_make)
-			if err != nil {
-				return err
-			}
-			return nil
 		}
 	}
 	return fmt.Errorf("failed to find make or mingw32-make.exe")

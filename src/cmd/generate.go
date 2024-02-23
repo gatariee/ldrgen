@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
@@ -148,35 +147,14 @@ var generateCmd = &cobra.Command{
 		utils.PrintInfo(message, true)
 
 		utils.PrintNewLine()
-		utils.PrintInfo("Compile loader? (y/n)", true)
 
-		rl, err := readline.New("> ")
+		compile, _ := cmd.Flags().GetString("compile")
+		err = gen.CompileLoader(absOutputPath, compile)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(1)
+			return
 		}
-
-		compile, err := rl.Readline()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		switch compile {
-		case "y":
-			utils.PrintNewLine()
-			utils.PrintInfo("Compiling loader...", true)
-			err = gen.CompileLoader(absOutputPath)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			utils.PrintSuccess("Loader compiled successfully!", true)
-		default:
-			utils.PrintNewLine()
-			message := fmt.Sprintf("Okay, compile with: `cd %s && make`", absOutputPath)
-			utils.PrintInfo(message, true)
-		}
+		utils.PrintSuccess("Loader compiled successfully!", true)
 	},
 }
 
@@ -194,4 +172,5 @@ func init() {
 	generateCmd.Flags().StringP("args", "a", "", "Arguments to pass to template")
 
 	generateCmd.Flags().BoolP("cleanup", "c", false, "Cleanup temporary files")
+	generateCmd.Flags().StringP("compile", "c", "", "Compile loader with x86 or x64")
 }
