@@ -172,5 +172,5 @@ func init() {
 	generateCmd.Flags().StringP("args", "a", "", "Arguments to pass to template")
 
 	generateCmd.Flags().BoolP("cleanup", "c", false, "Cleanup temporary files")
-	generateCmd.Flags().StringP("compile", "c", "", "Compile loader with x86 or x64")
+	generateCmd.Flags().StringP("compile", "C", "", "Compile loader with x86 or x64")
 }
