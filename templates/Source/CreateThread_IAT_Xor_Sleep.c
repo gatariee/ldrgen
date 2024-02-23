@@ -32,7 +32,7 @@ Externally defined IAT variables:
 #include <stdio.h>
 #include <windows.h>
 
-int main( int argc, char *argv[] ) {
+int main( int argc, char * argv[] ) {
 
     /*
 
@@ -62,7 +62,7 @@ int main( int argc, char *argv[] ) {
         ( HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect );
 
         BOOL( *WriteProcessMemory )
-        ( HANDLE hProcess, LPVOID lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesWritten );
+        ( HANDLE hProcess, LPVOID lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T * lpNumberOfBytesWritten );
 
         DWORD( *QueueUserAPC )
         ( PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData );
@@ -149,9 +149,9 @@ int main( int argc, char *argv[] ) {
     printf( "[+] Successfully resolved %zu hashes\n", sizeof( hashes ) / sizeof( hashes[0] ) );
     printf( "[!!!] Beginning loader routine now. \n\n" );
 
-    STARTUPINFO si = { sizeof( si ) };
+    STARTUPINFO si         = { sizeof( si ) };
     PROCESS_INFORMATION pi = { 0 };
-    LPCSTR target = "C:\\Windows\\System32\\cmd.exe";
+    LPCSTR target          = "C:\\Windows\\System32\\cmd.exe";
 
     printf( "[-] Tasked to spawn: %s\n", target );
 

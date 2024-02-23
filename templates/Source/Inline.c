@@ -10,8 +10,8 @@ Externally defined shellcode variables:
 */
 
 #include <windows.h>
-int main( int argc, char *argv[] ) {
-    void *exec = VirtualAlloc( 0, shellcode_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE );
+int main( int argc, char * argv[] ) {
+    void * exec = VirtualAlloc( 0, shellcode_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE );
     memcpy( exec, shellcode, shellcode_size );
     ( (void ( * )())exec )();
     return 0;

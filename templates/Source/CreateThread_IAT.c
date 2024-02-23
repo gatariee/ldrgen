@@ -23,7 +23,7 @@ Externally defined IAT variables:
 #include <stdio.h>
 #include <windows.h>
 
-int main( int argc, char *argv[] ) {
+int main( int argc, char * argv[] ) {
 
     HMODULE hLib = LoadLibraryA( "kernel32.dll" );
     if ( hLib == NULL ) {
