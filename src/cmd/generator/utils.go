@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 )
 
@@ -75,33 +74,19 @@ func CheckPath(cmd string) (string, error) {
 }
 
 func Compile64(loaderPath string, make string) error {
-	if runtime.GOOS == "windows" {
-		cmd := exec.Command(make, "x64")
-		cmd.Dir = loaderPath
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		return cmd.Run()
-	} else {
-		cmd := exec.Command("cd " + loaderPath + " && " + make + " x64")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		return cmd.Run()
-	}
+	cmd := exec.Command(make, "x64")
+	cmd.Dir = loaderPath
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func Compile32(loaderPath string, make string) error {
-	if runtime.GOOS == "windows" {
-		cmd := exec.Command(make, "x86")
-		cmd.Dir = loaderPath
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		return cmd.Run()
-	} else {
-		cmd := exec.Command("cd " + loaderPath + " && " + make + " x86")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		return cmd.Run()
-	}
+	cmd := exec.Command(make, "x86")
+	cmd.Dir = loaderPath
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func CompileLoader(ldrPath string) error {
