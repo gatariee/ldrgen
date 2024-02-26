@@ -1,7 +1,7 @@
 #include <string.h>
 #include <windows.h>
 
-void Xor( BYTE * shellcode, DWORD shellcodeSize, const char * key ) {
+void xorShellcode( BYTE * shellcode, DWORD shellcodeSize, const char * key ) {
     size_t keyLen = strlen( key );
     BYTE   temp;
 
