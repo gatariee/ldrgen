@@ -162,39 +162,7 @@ loader_template:
 
       - sourcePath: "makefile"
         outputPath: "makefile"
-  
-  - token: "createthread_iat_xor_sleep"
-    key_required: true
-    enc_type: "xor"
-    method: "Dyanmic WinAPI resolution then VirtualAlloc, Sleep, xorShellcode, memcpy, CreateThread, WaitForSingleObject"
-    files:
-      - sourcePath: "Source/CreateThread_IAT_Xor_Sleep.c"
-        outputPath: "Main.c"
-        substitutions: 
-          key: "${ KEY }"
-          sleep: "${ SLEEP }"
-
-      - sourcePath: "Source/Hash.c"
-        outputPath: "Hash.c"
-
-      - sourcePath: "Source/Iat.c"
-        outputPath: "Iat.c"
-
-      - sourcePath: "Source/Xor.c"
-        outputPath: "Xor.c"
-      
-      - sourcePath: "Include/Hash.h"
-        outputPath: "Hash.h"
-
-      - sourcePath: "Include/Iat.h"
-        outputPath: "Iat.h"
-
-      - sourcePath: "Include/Xor.h"
-        outputPath: "Xor.h"
-
-      - sourcePath: "makefile"
-        outputPath: "makefile"
-  
+    
   - token: "queueuserapc"
     key_required: false
     method: "OpenProcess, VirtualAllocEx, WriteProcessMemory, OpenThread, QueueUserAPC"

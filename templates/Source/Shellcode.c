@@ -1,3 +1,4 @@
 // Don't touch this file!
-unsigned char shellcode[]   = ${ SHELLCODE };
-unsigned int shellcode_size = ${ SHELLCODE_SIZE };
+#include <windows.h>
+BYTE shellcode[]   = ${ SHELLCODE };
+DWORD shellcode_size = ${ SHELLCODE_SIZE };
