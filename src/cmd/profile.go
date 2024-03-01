@@ -155,7 +155,7 @@ var profileCmd = &cobra.Command{
 		err = PatchMakefile(
 			config.Compile.Gcc["x64"],
 			config.Compile.Gcc["x86"],
-			filepath.Join(config.OutputDir, "Makefile"),
+			filepath.Join(config.OutputDir, "makefile"),
 		)
 
 		if err != nil {
