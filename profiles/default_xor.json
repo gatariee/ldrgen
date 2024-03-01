@@ -3,7 +3,7 @@
     "author": "@gatari",
     "description": "A simple shellcode loader that uses CreateThread with XOR encrypted shellcode.",
     "template": {
-        "path": "/opt/ldrgen/templates/config.yaml",
+        "path": "/opt/tools/ldrgen/templates/config.yaml",
         "token": "CreateThread_Xor",
         "enc_type": "xor",
         "substitutions": {

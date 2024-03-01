@@ -3,7 +3,7 @@
     "author": "@gatari",
     "description": "A simple shellcode loader that uses CreateThread",
     "template": {
-        "path": "C:\\Users\\PC\\Desktop\\git\\ldrgen\\templates\\config.yaml",
+        "path": "/opt/tools/ldrgen/templates/config.yaml",
         "token": "CreateThread",
         "enc_type": "",
         "substitutions": {}
@@ -11,7 +11,7 @@
     "arch": "x64",
     "compile": {
         "automatic": true,
-        "make": "mingw32-make.exe",
+        "make": "make",
         "gcc": {
             "x64": "x86_64-w64-mingw32-gcc",
             "x86": "i686-w64-mingw32-gcc"
