@@ -2,8 +2,6 @@
 
 **ldrgen** allows operators to generate shellcode loaders from a set of pre-defined templates and profiles with the aim of hopefully streamlining development and reducing the time it takes to get a new loader out the door.
 
-> Also, because encrypting raw shellcode, then parsing it into a stageless loader is a _pain_
-
 ## Getting Started
 There are available binaries on the [releases](https://github.com/gatariee/ldrgen/releases) page, or you can build from source for the latest version.
 
