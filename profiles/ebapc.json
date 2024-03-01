@@ -1,0 +1,28 @@
+{
+    "name": "EBAPC",
+    "author": "@gatari",
+    "description": "Earlybird APC Shellcode Injection with XOR'ed shellcode & a little bit of sandbox evasion.",
+    "template": {
+        "path": "/opt/tools/ldrgen/templates/config.yaml",
+        "token": "EarlyBirdAPC_Buffed",
+        "enc_type": "xor",
+        "substitutions": {
+            "key": "as@&(!L@J#JKsn",
+            "pname": "C:\\Windows\\System32\\svchost.exe"
+        }
+    },
+    "arch": "x64",
+    "compile": {
+        "automatic": true,
+        "make": "make",
+        "gcc": {
+            "x64": "x86_64-w64-mingw32-gcc",
+            "x86": "i686-w64-mingw32-gcc"
+        },
+        "strip": {
+            "i686": "strip",
+            "x86_64": "strip"
+        }
+    },
+    "output_dir": "./ldr"
+}
