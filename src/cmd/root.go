@@ -36,8 +36,6 @@ A CLI tool for quick generation of evasive shellcode loaders using easily custom
 	`,
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -48,6 +46,7 @@ func Execute() {
 func init() {
 	rootCmd.AddCommand(lintCmd)
 	rootCmd.AddCommand(generateCmd)
+	rootCmd.AddCommand(profileCmd)
 
 	/* Disable default completion command */
 	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true

@@ -1,0 +1,27 @@
+{
+    "name": "Default Loader, but with XOR (CreateThread)",
+    "author": "@gatari",
+    "description": "A simple shellcode loader that uses CreateThread with XOR encrypted shellcode.",
+    "template": {
+        "path": "/opt/ldrgen/templates/config.yaml",
+        "token": "CreateThread_Xor",
+        "enc_type": "xor",
+        "substitutions": {
+            "key": "as@&(!L@J#JKsn"
+        }
+    },
+    "arch": "x64",
+    "compile": {
+        "automatic": true,
+        "make": "make",
+        "gcc": {
+            "x64": "x86_64-w64-mingw32-gcc",
+            "x86": "i686-w64-mingw32-gcc"
+        },
+        "strip": {
+            "i686": "strip",
+            "x86_64": "strip"
+        }
+    },
+    "output_dir": "./createthreadxor"
+}

@@ -2,6 +2,7 @@ package generate
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,67 +11,18 @@ import (
 	"ldrgen/cmd/utils"
 )
 
-func ProcessShellcodeTemplate(binPath string, enc string, args map[string]string, outputPath string, config *Config, template_path string) error {
-	if enc != "" {
-		_, ok := args["key"]
-		if !ok {
-			return fmt.Errorf("key not provided")
-		}
+// Config and other custom types would be defined elsewhere in the package.
+
+func ProcessShellcodeTemplate(binPath, enc string, args map[string]string, outputPath string, config *Config, templatePath string) error {
+	if enc != "" && args["key"] == "" {
+		return fmt.Errorf("key not provided")
 	}
 
-	switch enc {
-	case "xor":
-		key := args["key"]
-
-		message := fmt.Sprintf("[ %s ] ", color.New(color.Bold).Sprintf("Shellcode Encryption"))
-		utils.PrintWhite(message)
-
-		message = fmt.Sprintf("Using: %s", color.New(color.Bold).Sprintf("XOR"))
-		utils.Print(message, true)
-
-		message = fmt.Sprintf("Key: %s", color.New(color.Bold).Sprintf(key))
-		utils.Print(message, true)
-
-		shellcode, err := os.ReadFile(binPath)
-		if err != nil {
+	if enc == "xor" {
+		if err := encryptShellcodeXOR(binPath, args["key"]); err != nil {
 			return err
 		}
-
-		var byteArray []string
-		for _, b := range shellcode {
-			byteArray = append(byteArray, fmt.Sprintf("0x%02X", b))
-		}
-
-		ba := fmt.Sprintf("{ %s }", strings.Join(byteArray, ", "))
-
-		message = fmt.Sprintf("Size: %s bytes", color.New(color.Bold).Sprintf("%d", len(shellcode)))
-		utils.Print(message, true)
-
-		message = fmt.Sprintf("Before: %s ... }", color.New(color.Bold).Sprintf(ba[0:24]))
-		utils.Print(message, true)
-
-		for i := 0; i < len(shellcode); i++ {
-			shellcode[i] ^= key[i%len(key)]
-		}
-
-		byteArray = nil
-		for _, b := range shellcode {
-			byteArray = append(byteArray, fmt.Sprintf("0x%02X", b))
-		}
-
-		ba = fmt.Sprintf("{ %s }", strings.Join(byteArray, ", "))
-		message = fmt.Sprintf("After: %s ... }", color.New(color.Bold).Sprintf(ba[0:24]))
-		utils.Print(message, true)
-
-		err = os.WriteFile(binPath+".enc", shellcode, 0o644)
-		if err != nil {
-			return err
-		}
-
-		binPath = binPath + ".enc"
-
-		utils.PrintNewLine()
-	default:
+		binPath += ".enc"
 	}
 
 	shellcodeArray, err := ToCArray(binPath)
@@ -83,54 +35,89 @@ func ProcessShellcodeTemplate(binPath string, enc string, args map[string]string
 		return err
 	}
 
-	shellcode_template, err := ReadFile(filepath.Join(template_path, config.Shellcode.SourcePath))
+	shellcodeTemplate, err := prepareShellcodeTemplate(templatePath, config, shellcodeArray, fileInfo.Size())
 	if err != nil {
 		return err
 	}
 
-	shellcodeTemplate := strings.ReplaceAll(shellcode_template, config.Shellcode.Substitutions["shellcode"], shellcodeArray)
-	shellcodeTemplate = strings.ReplaceAll(shellcodeTemplate, config.Shellcode.Substitutions["shellcode_size"], fmt.Sprintf("%d", fileInfo.Size()))
-
-	abs, err := filepath.Abs(strings.TrimSpace(outputPath))
+	outputFilePath, err := writeShellcodeTemplate(outputPath, config.Shellcode.IncludeOutputName, shellcodeTemplate)
 	if err != nil {
 		return err
 	}
 
-	message := fmt.Sprintf("[ %s ] ", color.New(color.Bold).Sprintf("%s", config.Shellcode.SourceOutputName))
-	utils.PrintWhite(message)
-
-	message = fmt.Sprintf("Size: %s bytes", color.New(color.Bold).Sprintf("%d", fileInfo.Size()))
-	utils.Print(message, true)
-
-	message = fmt.Sprintf("Starting bytes: %s ... }", color.New(color.Bold).Sprintf("%s", shellcodeArray[0:24]))
-	utils.Print(message, true)
-
-	err = SaveToFile(outputPath, config.Shellcode.SourceOutputName, shellcodeTemplate)
-	if err != nil {
-		return err
-	}
-
-	message = fmt.Sprintf("%s -> %s", config.Shellcode.SourceOutputName, abs+"/"+config.Shellcode.SourceOutputName)
-	utils.Print(message, true)
-
-	header_template, err := ReadFile(filepath.Join(template_path, config.Shellcode.IncludePath))
-	if err != nil {
-		return err
-	}
-
-	message = fmt.Sprintf("[ %s ] ", color.New(color.Bold).Sprintf("%s", config.Shellcode.IncludeOutputName))
-	utils.PrintNewLine()
-	utils.PrintWhite(message)
-
-	err = SaveToFile(outputPath, config.Shellcode.IncludeOutputName, header_template)
-	if err != nil {
-		return err
-	}
-
-	message = fmt.Sprintf("%s -> %s", config.Shellcode.IncludeOutputName, abs+"/"+config.Shellcode.IncludeOutputName)
-	utils.Print(message, true)
-
-	utils.PrintNewLine()
+	printSummary(fileInfo.Size(), shellcodeArray, outputFilePath, config.Shellcode.IncludeOutputName)
 
 	return nil
+}
+
+func encryptShellcodeXOR(binPath, key string) error {
+	shellcode, err := os.ReadFile(binPath)
+	if err != nil {
+		return err
+	}
+
+	printEncryptionStart("XOR", key, shellcode)
+
+	for i := range shellcode {
+		shellcode[i] ^= key[i%len(key)]
+	}
+
+	printEncryptionEnd(shellcode)
+
+	return os.WriteFile(binPath+".enc", shellcode, 0o644)
+}
+
+func prepareShellcodeTemplate(templatePath string, config *Config, shellcodeArray string, fileSize int64) (string, error) {
+	shellcodeTemplateContent, err := ioutil.ReadFile(filepath.Join(templatePath, config.Shellcode.IncludePath))
+	if err != nil {
+		return "", err
+	}
+
+	shellcodeTemplate := strings.ReplaceAll(string(shellcodeTemplateContent), config.Shellcode.Substitutions["shellcode"], shellcodeArray)
+	shellcodeTemplate = strings.ReplaceAll(shellcodeTemplate, config.Shellcode.Substitutions["shellcode_size"], fmt.Sprintf("%d", fileSize))
+
+	return shellcodeTemplate, nil
+}
+
+func writeShellcodeTemplate(outputPath, outputName, content string) (string, error) {
+	fullOutputPath, err := filepath.Abs(filepath.Join(strings.TrimSpace(outputPath), outputName))
+	if err != nil {
+		return "", err
+	}
+
+	if err := os.WriteFile(fullOutputPath, []byte(content), 0o644); err != nil {
+		return "", err
+	}
+
+	return fullOutputPath, nil
+}
+
+func printSummary(fileSize int64, shellcodeArray, outputFilePath, includeOutputName string) {
+	utils.Print(fmt.Sprintf("Size: %s bytes", color.New(color.Bold).Sprintf("%d", fileSize)), true)
+	utils.Print(fmt.Sprintf("Starting bytes: %s ... }", color.New(color.Bold).Sprintf("%s", shellcodeArray[:24])), true)
+	utils.PrintWhite(fmt.Sprintf("[ %s ] ", color.New(color.Bold).Sprintf("%s", includeOutputName)))
+	utils.Print(fmt.Sprintf("%s -> %s", includeOutputName, outputFilePath), true)
+	utils.PrintNewLine()
+}
+
+func printEncryptionStart(encMethod string, key string, shellcode []byte) {
+	utils.PrintWhite(fmt.Sprintf("[ %s ] ", color.New(color.Bold).Sprintf("Shellcode Encryption")))
+	utils.Print(fmt.Sprintf("Using: %s", color.New(color.Bold).Sprintf(encMethod)), true)
+	utils.Print(fmt.Sprintf("Key: %s", color.New(color.Bold).Sprintf(key)), true)
+	utils.Print(fmt.Sprintf("Size: %s bytes", color.New(color.Bold).Sprintf("%d", len(shellcode))), true)
+	printShellcodeBytes("Before", shellcode)
+}
+
+func printEncryptionEnd(shellcode []byte) {
+	printShellcodeBytes("After", shellcode)
+	utils.PrintNewLine()
+}
+
+func printShellcodeBytes(prefix string, shellcode []byte) {
+	byteArray := make([]string, len(shellcode))
+	for i, b := range shellcode {
+		byteArray[i] = fmt.Sprintf("0x%02X", b)
+	}
+	ba := fmt.Sprintf("{ %s }", strings.Join(byteArray, ", "))
+	utils.Print(fmt.Sprintf("%s: %s ... }", prefix, color.New(color.Bold).Sprintf(ba[:24])), true)
 }

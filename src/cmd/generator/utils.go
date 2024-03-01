@@ -65,7 +65,6 @@ func ToCArray(filePath string) (string, error) {
 
 func CheckPath(cmd string) (string, error) {
 	path, err := exec.LookPath(cmd)
-	fmt.Println(path)
 	if err != nil {
 		return "", fmt.Errorf("failed to find %s: %v", cmd, err)
 	}
@@ -89,18 +88,13 @@ func Compile32(loaderPath string, make string) error {
 	return cmd.Run()
 }
 
-func CompileLoader(ldrPath string, arch string) error {
-	makes := []string{"make", "mingw32-make.exe"}
-	for _, make := range makes {
-		path_to_make, err := CheckPath(make)
-		if err == nil {
-			switch arch {
-			case "x64":
-				return Compile64(ldrPath, path_to_make)
-			case "x86":
-				return Compile32(ldrPath, path_to_make)
-			}
-		}
+func CompileLoader(ldrPath string, arch string, mingw_make string) error {
+	switch arch {
+	case "x64":
+		return Compile64(ldrPath, mingw_make)
+	case "x86":
+		return Compile32(ldrPath, mingw_make)
+	default:
+		return fmt.Errorf("unsupported architecture: %s", arch)
 	}
-	return fmt.Errorf("failed to find make or mingw32-make.exe")
 }

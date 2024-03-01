@@ -1,15 +1,12 @@
 shellcode_template:
-  sourcePath: "Source/Shellcode.c"
   includePath: "Include/Shellcode.h"
   substitutions:
     shellcode: "${ SHELLCODE }" 
     shellcode_size: "${ SHELLCODE_SIZE }"
-  includeGuard: "SHELLCODE_H"
-  sourceOutputName: "Shellcode.c"
   includeOutputName: "Shellcode.h"
 
 loader_template:
-  - token: "inline" # This is used to identify the loading method (e.g -ldr <token>)
+  - token: "inline"
     key_required: false # This loader does not use encrypted shellcode, so no key is required
     method: "VirtualAlloc, memcpy, ((void(*)())exec)();" # This can be whatever, just a description of the method
     files: # These are relative paths to the files that will be included in the loader from the template folder

@@ -15,8 +15,12 @@ import (
 
 var generateCmd = &cobra.Command{
 	Use:   "generate",
-	Short: "Generate a loader",
-	Long:  `Generate a loader based on the specified template & arguments`,
+	Short: "Generate a loader (deprecated, use profile instead)",
+	Long: `
+Generate a loader based on the specified template & arguments
+
+[!] Currently deprecated due to my dislike for the extremely long command-line arguments required, use the profile command instead.
+	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		binPath, _ := cmd.Flags().GetString("bin")
 		AbsBinPath, err := filepath.Abs(binPath)
@@ -149,7 +153,7 @@ var generateCmd = &cobra.Command{
 		utils.PrintNewLine()
 
 		compile, _ := cmd.Flags().GetString("compile")
-		err = gen.CompileLoader(absOutputPath, compile)
+		err = gen.CompileLoader(absOutputPath, compile, "make")
 		if err != nil {
 			fmt.Println(err)
 			return

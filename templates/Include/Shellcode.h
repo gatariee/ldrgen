@@ -1,8 +1,7 @@
 #ifndef shellcode_h
 #define shellcode_h
 
-#include <windows.h>
-extern BYTE shellcode[];
-extern DWORD shellcode_size;
+unsigned char shellcode[]    = ${ SHELLCODE };
+unsigned int  shellcode_size = ${ SHELLCODE_SIZE };
 
 #endif
