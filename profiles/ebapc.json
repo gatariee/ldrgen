@@ -8,7 +8,7 @@
         "enc_type": "xor",
         "substitutions": {
             "key": "as@&(!L@J#JKsn",
-            "pname": "C:\\Windows\\System32\\svchost.exe"
+            "pname": "C:\\\\Windows\\\\System32\\\\svchost.exe"
         }
     },
     "arch": "x64",
