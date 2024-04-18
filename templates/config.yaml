@@ -21,7 +21,7 @@ loader_template:
     enc_type: "xor" # Since this loader uses encrypted shellcode, we need to specify the encryption type
     method: "VirtualAlloc, xorShellcode, memcpy, ((void(*)())exec)();"
     files:
-      - sourcePath: "Source/Inline_xor.c"
+      - sourcePath: "Source/Inline_Xor.c"
         outputPath: "Main.c"
         substitutions: 
           key: "${KEY}"
