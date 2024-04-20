@@ -21,7 +21,7 @@ loader_template:
     enc_type: "xor" # Since this loader uses encrypted shellcode, we need to specify the encryption type
     method: "VirtualAlloc, xorShellcode, memcpy, ((void(*)())exec)();"
     files:
-      - sourcePath: "Source/Inline_xor.c"
+      - sourcePath: "Source/Inline_Xor.c"
         outputPath: "Main.c"
         substitutions: 
           key: "${KEY}"
@@ -51,7 +51,7 @@ loader_template:
     key_required: false
     method: "OpenProcess, VirtualAllocEx (PAGE_READWRITE), WriteProcessMemory, VirtualProtect (PAGE_EXECUTE_READ), CreateRemoteThread, WaitForSingleObject, CloseHandle"
     files:
-      - sourcePath: "Source/CreateRemoteThreadRx.c"
+      - sourcePath: "Source/CreateRemoteThreadRX.c"
         outputPath: "Main.c"
 
       - sourcePath: "makefile"

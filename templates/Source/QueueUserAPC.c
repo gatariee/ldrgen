@@ -9,10 +9,10 @@ Externally defined shellcode variables:
 
 */
 
+#include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <tlhelp32.h>
-#include <windows.h>
 
 #define INITIAL_THREAD_CAPACITY 1024
 
